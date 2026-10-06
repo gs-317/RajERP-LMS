@@ -1589,6 +1589,139 @@
             background: #374151;
             color: #fff;
         }
+
+        /* Google Drive Folder View */
+
+        #folderTreeModal .modal-content {
+            background: #111827;
+            color: #e5e7eb;
+            border: 1px solid #2d3748;
+            border-radius: 12px;
+        }
+
+        #folderTreeModal .modal-header {
+            background: #182131;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        #folderTreeModal .modal-title {
+            color: #f9fafb;
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        #folderTreeModal .btn-close {
+            filter: invert(1) grayscale(100%);
+            opacity: .7;
+        }
+
+        #folderTreeModal .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #4b5563 #111827;
+        }
+
+        #folderTreeModal .btn-outline-secondary {
+            color: #e5e7eb;
+            border-color: #4b5563;
+        }
+
+        #folderTreeModal .btn-outline-secondary:hover {
+            background: #374151;
+            color: #fff;
+        }
+
+        #folderTreeModal .form-control {
+            background: #1f2937;
+            color: #f3f4f6;
+            border: 1px solid #374151;
+            box-shadow: none;
+        }
+
+        #folderTreeModal .form-control:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
+        }
+
+        .tree-list {
+            list-style: none;
+            margin: 0;
+            padding-left: 0;
+        }
+
+        .tree-list .tree-list {
+            padding-left: 22px;
+            border-left: 1px dashed #374151;
+            margin-left: 9px;
+        }
+
+        .tree-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .tree-row:hover {
+            background: #1f2937;
+        }
+
+        .tree-row .caret {
+            width: 14px;
+            font-size: 12px;
+            color: #9ca3af;
+            transition: transform .15s;
+        }
+
+        .tree-item.open>.tree-row .caret {
+            transform: rotate(90deg);
+        }
+
+        .tree-row .bi-folder-fill,
+        .tree-row .bi-folder2-open {
+            color: #fbbf24;
+        }
+
+        .tree-row .bi-file-earmark-pdf {
+            color: #f87171;
+        }
+
+        .tree-row .bi-file-earmark {
+            color: #9ca3af;
+        }
+
+        .tree-row .tree-name {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tree-row .tree-meta {
+            font-size: 12px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .tree-msg {
+            padding: 6px 8px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        .tree-msg.error {
+            color: #f87171;
+        }
+
+        /* Keep the PDF viewer above the file browser */
+        #pdfViewerModal {
+            z-index: 1065;
+        }
     </style>
 
 </head>
@@ -1638,8 +1771,11 @@
             <i class="bi bi-plus-circle"></i>
             <span>New Dak</span>
         </a>
-
-
+        <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#folderTreeModal" id="browseFilesLink">
+            <i class="bi bi-folder2-open"></i>
+            <span>Browse Files</span>
+        </a>
+       
         <a href="#" class="sidebar-link" id="refreshLink">
 
             <i class="bi bi-arrow-clockwise"></i>
@@ -2150,10 +2286,17 @@
                                 <option value="AVVNL">AVVNL</option>
                                 <option value="JVVNL">JVVNL</option>
                                 <option value="JDVVNL">JDVVNL</option>
+                                <option value="RRVUNL">RRVUNL</option>
                                 <option value="RSAMB">RSAMB</option>
                                 <option value="RSMML">RSMML</option>
                                 <option value="DAM">DAM</option>
                                 <option value="JMRC">JMRC</option>
+                                <option value="RISL">RISL</option>
+                                <option value="RISL-PAYMENT-CELL">RISL-PAYMENT-CELL</option>
+                                <option value="RGHS">RGHS</option>
+                                <option value="RICCO">RICCO</option>
+                                <option value="RSRTC">RSRTC</option>
+                                <option value="ECONNECT">ECONNECT</option>
                                 <option value="OTHER">OTHER</option>
                             </select>
                         </div>
@@ -2194,12 +2337,13 @@
                             </label>
                             <select class="form-select" id="dakType" required>
                                 <option value="">Choose</option>
-                                <option value="DO LETTER">DO LETTER</option>
-                                <option value="OFFICER ORDER">OFFICER ORDER</option>
-                                <option value="PAYMENT SANCTION ORDER (PSO)">PAYMENT SANCTION ORDER (PSO)</option>
-                                <option value="SoEE">SoEE</option>
-                                <option value="UO NOTE">UO NOTE</option>
                                 <option value="GENERAL LETTER">GENERAL LETTER</option>
+                                <option value="UO NOTE">UO NOTE</option>
+                                <option value="DO LETTER">DO LETTER</option>
+                                <option value="OFFICE ORDER">OFFICE ORDER</option>
+                                <option value="SoEE">SoEE</option>
+                                <option value="PAYMENT REMINDER">PAYMENT REMINDER</option>
+                                <option value="PAYMENT SANCTION ORDER (PSO)">PAYMENT SANCTION ORDER (PSO)</option>
                             </select>
                         </div>
 
@@ -2209,7 +2353,13 @@
                             </label>
                             <input type="file" class="form-control" id="pdfFile" accept=".pdf,application/pdf" required>
                             <div class="form-text">
-                                Only PDF files are allowed. Maximum file size: 10 MB.
+                                Only PDF files are allowed. Maximum file size: 25 MB.
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="compressPdf" checked>
+                                <label class="form-check-label" for="compressPdf">
+                                    Compress PDF before upload (best for scanned documents)
+                                </label>
                             </div>
                             <div id="fileError" class="d-none mt-2"></div>
                         </div>
@@ -2252,11 +2402,35 @@
     </div>
 
     <!-- =====================================================
+         Google Drive Folder View Modal
+         ===================================================== -->
+
+    <div class="modal fade" id="folderTreeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-folder2-open me-2"></i>Dak Files</h5>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-auto me-3" id="treeRefreshBtn">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="treeSearch" class="form-control mb-3"
+                        placeholder="Filter loaded files and folders...">
+                    <div id="folderTree"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
          BOOTSTRAP
          ===================================================== -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 
 
     <script>
@@ -2266,7 +2440,7 @@
            ===================================================== */
 
         const API_URL =
-            'https://script.google.com/macros/s/AKfycbynWdjcEGxBxW8fDgZQKn0PPRrL_IztnJt1ZQ9dtiyVgqbiPjDGtlfWHEIMibPxmrdV/exec';
+            'https://script.google.com/macros/s/AKfycbzwObAjZex4VUmXbGBgjCzkr6uh1cjrGnlRHVnJASKPUzQrkP4Wror7zjpmHzlaYBSa/exec';
 
 
         /*
@@ -4228,7 +4402,7 @@
                     }
 
                     const maxSize =
-                        10 * 1024 * 1024;
+                        25 * 1024 * 1024;
 
                     const isPdf =
                         file.type === 'application/pdf' ||
@@ -4253,7 +4427,7 @@
                     if (file.size > maxSize) {
 
                         error.textContent =
-                            'PDF file must not exceed 10 MB.';
+                            'PDF file must not exceed 25 MB.';
 
                         error.classList.remove(
                             'd-none'
@@ -4271,7 +4445,7 @@
         $(function () {
 
             // const SCRIPT_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
-            const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+            const MAX_SIZE = 25 * 1024 * 1024; // 10 MB
 
             // ---- Show/hide "Other organisation" input ----
             $('#organisation').on('change', function () {
@@ -4286,7 +4460,7 @@
                 if (!file) return 'Please select a PDF file.';
                 const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
                 if (!isPdf) return 'Only PDF files are allowed.';
-                if (file.size > MAX_SIZE) return 'File size must not exceed 10 MB.';
+                if (file.size > MAX_SIZE) return 'File size must not exceed 25 MB.';
                 return '';
             }
 
@@ -4310,6 +4484,52 @@
                     reader.onerror = function () { reject(new Error('Could not read file.')); };
                     reader.readAsDataURL(file);
                 });
+            }
+
+            pdfjsLib.GlobalWorkerOptions.workerSrc =
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+            const MIN_COMPRESS_SIZE = 500 * 1024; // skip files under 500 KB
+            const RENDER_SCALE = 2;          // 2 = about 144 dpi; raise for sharper text
+            const JPEG_QUALITY = 0.6;        // 0.5 smaller, 0.8 sharper
+
+            async function compressPdf(file, onProgress) {
+                const buf = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+                const out = await PDFLib.PDFDocument.create();
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    if (onProgress) onProgress(i, pdf.numPages);
+
+                    const page = await pdf.getPage(i);
+                    const base = page.getViewport({ scale: 1 });
+                    const view = page.getViewport({ scale: RENDER_SCALE });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.floor(view.width);
+                    canvas.height = Math.floor(view.height);
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    await page.render({ canvasContext: ctx, viewport: view }).promise;
+
+                    const jpgBlob = await new Promise(function (res) {
+                        canvas.toBlob(res, 'image/jpeg', JPEG_QUALITY);
+                    });
+                    const jpg = await out.embedJpg(await jpgBlob.arrayBuffer());
+
+                    const newPage = out.addPage([base.width, base.height]);
+                    newPage.drawImage(jpg, { x: 0, y: 0, width: base.width, height: base.height });
+
+                    canvas.width = canvas.height = 0; // free memory
+                }
+
+                const bytes = await out.save();
+                const compressed = new Blob([bytes], { type: 'application/pdf' });
+
+                // Keep the original if compression didn't help
+                return compressed.size < file.size ? compressed : file;
             }
 
             // ---- Submit ----
@@ -4338,7 +4558,22 @@
                 );
 
                 try {
-                    const base64 = await readFileAsBase64(file);
+                    let uploadFile = file;
+
+                    if ($('#compressPdf').is(':checked') && file.size > MIN_COMPRESS_SIZE) {
+                        try {
+                            uploadFile = await compressPdf(file, function (p, t) {
+                                $btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Compressing ' + p + '/' + t + '...');
+                            });
+                        } catch (compressErr) {
+                            console.warn('Compression failed, uploading original:', compressErr);
+                            uploadFile = file;
+                        }
+                        $btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Uploading...');
+                    }
+
+                    const base64 = await readFileAsBase64(uploadFile);
+                    // const base64 = await readFileAsBase64(file);
 
                     const payload = {
                         dakMode: $('input[name="dakMode"]:checked').val(),
@@ -4387,9 +4622,158 @@
                 }
             });
         });
+
+        // ====================== Google Drive Folder View ========================== //
+        (function () {
+
+            const TREE_API = API_URL; // your Apps Script /exec URL
+            let treeLoaded = false;
+
+            function esc(s) {
+                return String(s == null ? '' : s)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            function fmtSize(b) {
+                if (!b) return '';
+                if (b < 1024) return b + ' B';
+                if (b < 1048576) return (b / 1024).toFixed(0) + ' KB';
+                return (b / 1048576).toFixed(1) + ' MB';
+            }
+
+            function fetchFolder(folderId) {
+                return $.ajax({
+                    url: TREE_API,
+                    dataType: 'jsonp',
+                    data: { action: 'getFolderContents', folderId: folderId || 'root', _: Date.now() }
+                });
+            }
+
+            function renderItems(data) {
+                let html = '';
+
+                data.folders.forEach(function (f) {
+                    html +=
+                        '<li class="tree-item folder" data-id="' + esc(f.id) + '" data-name="' + esc(f.name.toLowerCase()) + '">' +
+                        '<div class="tree-row folder-row">' +
+                        '<i class="bi bi-chevron-right caret"></i>' +
+                        '<i class="bi bi-folder-fill"></i>' +
+                        '<span class="tree-name" title="' + esc(f.name) + '">' + esc(f.name) + '</span>' +
+                        '</div>' +
+                        '<ul class="tree-list d-none"></ul>' +
+                        '</li>';
+                });
+
+                data.files.forEach(function (f) {
+                    const isPdf = /\.pdf$/i.test(f.name);
+                    html +=
+                        '<li class="tree-item file" data-name="' + esc(f.name.toLowerCase()) + '">' +
+                        '<div class="tree-row file-row" data-url="' + esc(f.url) + '" data-pdf="' + (isPdf ? '1' : '0') + '">' +
+                        '<span class="caret"></span>' +
+                        '<i class="bi ' + (isPdf ? 'bi-file-earmark-pdf' : 'bi-file-earmark') + '"></i>' +
+                        '<span class="tree-name" title="' + esc(f.name) + '">' + esc(f.name) + '</span>' +
+                        '<span class="tree-meta">' + esc(fmtSize(f.size)) + ' · ' + esc(f.updated) + '</span>' +
+                        '</div>' +
+                        '</li>';
+                });
+
+                if (!html) html = '<li class="tree-msg">This folder is empty.</li>';
+                return html;
+            }
+
+            function loadRoot() {
+                const $tree = $('#folderTree');
+                $tree.html('<div class="tree-msg"><span class="spinner-border spinner-border-sm me-2"></span>Loading...</div>');
+
+                fetchFolder('root')
+                    .done(function (res) {
+                        if (!res || !res.success) {
+                            $tree.html('<div class="tree-msg error">' + esc(res && res.error || 'Could not load folders.') + '</div>');
+                            return;
+                        }
+                        $tree.html('<ul class="tree-list">' + renderItems(res.data) + '</ul>');
+                        treeLoaded = true;
+                    })
+                    .fail(function () {
+                        $tree.html('<div class="tree-msg error">Request failed. Check the web app URL and deployment.</div>');
+                    });
+            }
+
+            // Expand / collapse folder (loads children on first open)
+            $(document).on('click', '#folderTree .folder-row', function () {
+                const $li = $(this).closest('.tree-item');
+                const $children = $li.children('.tree-list');
+                const $icon = $(this).find('.bi-folder-fill, .bi-folder2-open');
+
+                if ($li.hasClass('open')) {
+                    $li.removeClass('open');
+                    $children.addClass('d-none');
+                    $icon.removeClass('bi-folder2-open').addClass('bi-folder-fill');
+                    return;
+                }
+
+                $li.addClass('open');
+                $children.removeClass('d-none');
+                $icon.removeClass('bi-folder-fill').addClass('bi-folder2-open');
+
+                if ($li.data('loaded')) return;
+
+                $children.html('<li class="tree-msg"><span class="spinner-border spinner-border-sm me-2"></span>Loading...</li>');
+
+                fetchFolder($li.data('id'))
+                    .done(function (res) {
+                        if (!res || !res.success) {
+                            $children.html('<li class="tree-msg error">' + esc(res && res.error || 'Error') + '</li>');
+                            return;
+                        }
+                        $children.html(renderItems(res.data));
+                        $li.data('loaded', true);
+                    })
+                    .fail(function () {
+                        $children.html('<li class="tree-msg error">Request failed.</li>');
+                    });
+            });
+
+            // Open file
+            $(document).on('click', '#folderTree .file-row', function () {
+                const url = $(this).data('url');
+                if ($(this).data('pdf') === 1 || $(this).data('pdf') === '1') {
+                    openPdfViewer(url);            // your existing viewer
+                } else {
+                    window.open(url, '_blank', 'noopener');
+                }
+            });
+
+            // Filter already-loaded items
+            $('#treeSearch').on('input', function () {
+                const q = $(this).val().trim().toLowerCase();
+                const $items = $('#folderTree .tree-item');
+
+                if (!q) { $items.show(); return; }
+
+                $items.hide();
+                $items.filter(function () {
+                    return String($(this).attr('data-name')).indexOf(q) !== -1;
+                }).each(function () {
+                    $(this).show().parents('.tree-item').show();
+                });
+            });
+
+            $('#treeRefreshBtn').on('click', function () { $('#treeSearch').val(''); loadRoot(); });
+
+            // Load when the popup first opens
+            $('#folderTreeModal').on('show.bs.modal', function () {
+                if (!treeLoaded) loadRoot();
+            });
+
+            // Put the PDF viewer's backdrop above the file browser
+            $('#pdfViewerModal').on('shown.bs.modal', function () {
+                $('.modal-backdrop').last().css('z-index', 1060);
+            });
+
+        })();
     </script>
-
-
+    
 </body>
-
 </html>
