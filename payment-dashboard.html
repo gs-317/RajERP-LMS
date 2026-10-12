@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Payment Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0b1220;
+            --panel: #111827;
+            --panel-2: #182131;
+            --line: #2d3748;
+            --input: #1f2937;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --accent: #8b5cf6;
+            --accent-d: #7c3aed;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ---------- Top bar ---------- */
+        .topbar {
+            background: var(--panel-2);
+            border-bottom: 1px solid var(--line);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+            color: #f9fafb;
+        }
+
+        .topbar small {
+            color: var(--muted);
+        }
+
+        .topbar .ms-auto {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-theme {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn-theme:hover {
+            background: var(--accent-d);
+            border-color: var(--accent-d);
+            color: #fff;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid #4b5563;
+            color: var(--text);
+        }
+
+        .btn-ghost:hover {
+            background: #374151;
+            color: #fff;
+        }
+
+        .page {
+            padding: 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* ---------- Panels ---------- */
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 18px;
+            height: 100%;
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #f9fafb;
+            margin-bottom: 14px;
+        }
+
+        .section-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--muted);
+            margin: 28px 0 12px;
+        }
+
+        /* ---------- KPI ---------- */
+        .kpi {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            font-size: 22px;
+            flex: 0 0 48px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f9fafb;
+            line-height: 1.1;
+        }
+
+        .kpi-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .ic-phase {
+            background: rgba(139, 92, 246, .15);
+            color: #a78bfa;
+        }
+
+        .ic-soee {
+            background: rgba(34, 211, 238, .15);
+            color: #22d3ee;
+        }
+
+        .ic-pso {
+            background: rgba(245, 158, 11, .15);
+            color: #fbbf24;
+        }
+
+        .ic-inv {
+            background: rgba(52, 211, 153, .15);
+            color: #34d399;
+        }
+
+        /* ---------- Charts ---------- */
+        .chart-box {
+            position: relative;
+            height: 280px;
+        }
+
+        /* ---------- Filters ---------- */
+        .form-label {
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-select {
+            min-height: 42px;
+            background-color: var(--input);
+            color: #f3f4f6;
+            border: 1px solid #374151;
+            box-shadow: none;
+        }
+
+        .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
+            background-color: #202938;
+            color: #fff;
+        }
+
+        .form-select option {
+            background: var(--input);
+            color: #f3f4f6;
+        }
+
+        /* ---------- Tabs ---------- */
+        .data-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .data-tab {
+            background: var(--input);
+            border: 1px solid #374151;
+            color: var(--text);
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .data-tab:hover {
+            background: #374151;
+        }
+
+        .data-tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .data-tab .badge {
+            background: rgba(255, 255, 255, .15);
+            margin-left: 6px;
+            font-weight: 500;
+        }
+
+        /* ---------- Table ---------- */
+        .table-wrap {
+            overflow: auto;
+            max-height: 560px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        .table-wrap::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-wrap::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 10px;
+        }
+
+        .table-wrap::-webkit-scrollbar-track {
+            background: var(--panel);
+        }
+
+        table.data-table {
+            width: 100%;
+            margin: 0;
+            color: var(--text);
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13.5px;
+        }
+
+        .data-table thead th {
+            position: sticky;
+            top: 0;
+            background: var(--panel-2);
+            color: #f3f4f6;
+            border-bottom: 1px solid var(--line);
+            padding: 11px 12px;
+            white-space: nowrap;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #1f2937;
+            white-space: nowrap;
+        }
+
+        .data-table tbody tr:hover td {
+            background: #1a2332;
+        }
+
+        .data-table .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .data-table .wrap {
+            white-space: normal;
+            min-width: 260px;
+            max-width: 360px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--muted);
+        }
+
+        .empty-state i {
+            font-size: 34px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .pager {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* ---------- Loading / error ---------- */
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 18, 32, .85);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #errorBox {
+            display: none;
+            background: rgba(239, 68, 68, .1);
+            color: #f87171;
+            border: 1px solid #7f1d1d;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 576px) {
+            .page {
+                padding: 14px;
+            }
+
+            .topbar {
+                padding: 12px 14px;
+            }
+
+            .kpi-value {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= TOP BAR ================= -->
+    <div class="topbar">
+        <a href="dashboard.html" class="btn btn-ghost btn-sm"><i class="bi bi-arrow-left"></i> Dak Dashboard</a>
+        <div>
+            <h1><i class="bi bi-currency-rupee me-1"></i>Payment Dashboard</h1>
+            <small id="lastUpdated">Loading...</small>
+        </div>
+        <div class="ms-auto">
+            <button type="button" class="btn btn-theme btn-sm" id="refreshBtn"><i class="bi bi-arrow-clockwise"></i>
+                Refresh</button>
+        </div>
+    </div>
+
+    <div class="page">
+
+        <div id="errorBox"></div>
+
+        <!-- ================= KPIs ================= -->
+        <div class="row g-3">
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="panel kpi">
+                    <div class="kpi-icon ic-phase"><i class="bi bi-layers"></i></div>
+                    <div>
+                        <div class="kpi-label">Phases</div>
+                        <div class="kpi-value" id="kpiPhase">0</div>
+                        <div class="kpi-sub" id="kpiPhaseSub">&nbsp;</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="panel kpi">
+                    <div class="kpi-icon ic-soee"><i class="bi bi-receipt"></i></div>
+                    <div>
+                        <div class="kpi-label">SoEE</div>
+                        <div class="kpi-value" id="kpiSoee">0</div>
+                        <div class="kpi-sub" id="kpiSoeeSub">&nbsp;</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="panel kpi">
+                    <div class="kpi-icon ic-pso"><i class="bi bi-bank"></i></div>
+                    <div>
+                        <div class="kpi-label">PSO</div>
+                        <div class="kpi-value" id="kpiPso">0</div>
+                        <div class="kpi-sub" id="kpiPsoSub">&nbsp;</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="panel kpi">
+                    <div class="kpi-icon ic-inv"><i class="bi bi-file-earmark-text"></i></div>
+                    <div>
+                        <div class="kpi-label">Invoices</div>
+                        <div class="kpi-value" id="kpiInv">0</div>
+                        <div class="kpi-sub" id="kpiInvSub">&nbsp;</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CHARTS ================= -->
+        <div class="section-label">Overview</div>
+        <div class="row g-3">
+            <div class="col-12 col-lg-6">
+                <div class="panel">
+                    <div class="panel-title">SoEE: Amount, Credited and Pending by Organisation</div>
+                    <div class="chart-box"><canvas id="chSoeeOrg"></canvas></div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <div class="panel">
+                    <div class="panel-title">PSO: Approved, Sanctioned and Net Payable by PSO No.</div>
+                    <div class="chart-box"><canvas id="chPsoOrg"></canvas></div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-5">
+                <div class="panel">
+                    <div class="panel-title">Net Payable by Phase</div>
+                    <div class="chart-box"><canvas id="chPhase"></canvas></div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-7">
+                <div class="panel">
+                    <div class="panel-title">Invoice Amount by Month</div>
+                    <div class="chart-box"><canvas id="chInvMonth"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= FILTERS ================= -->
+        <div class="section-label">Filters</div>
+        <div class="panel">
+            <div class="row g-3 align-items-end">
+                <div class="col-6 col-lg-3">
+                    <label class="form-label" for="fPhase">Phase</label>
+                    <select class="form-select" id="fPhase"></select>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <label class="form-label" for="fOrg">Organisation</label>
+                    <select class="form-select" id="fOrg"></select>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label" for="fSoee">SoEE No.</label>
+                    <select class="form-select" id="fSoee"></select>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label" for="fPso">PSO No.</label>
+                    <select class="form-select" id="fPso"></select>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <button type="button" class="btn btn-ghost w-100" id="resetBtn" style="min-height:42px;">
+                        <i class="bi bi-x-circle"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= DATA ================= -->
+        <div class="section-label">Filtered Data</div>
+        <div class="panel">
+            <div class="data-tabs" id="dataTabs"></div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead id="dataHead"></thead>
+                    <tbody id="dataBody"></tbody>
+                </table>
+            </div>
+            <div class="pager">
+                <div id="pagerInfo"></div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-ghost btn-sm" id="prevPage"><i class="bi bi-chevron-left"></i>
+                        Prev</button>
+                    <button type="button" class="btn btn-ghost btn-sm" id="nextPage">Next <i
+                            class="bi bi-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="loadingOverlay">
+        <div class="spinner-border text-light"></div>
+        <div>Loading payment data...</div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <script>
+        $(function () {
+
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVrMz-VNIJHDg_VMkf2OJqMFsxxoIMin_zcui82JvNlLkdgvSwJrJW0QVscWexeMQ3/exec';
+            const PAGE_SIZE = 15;
+            const COLORS = ['#8b5cf6', '#22d3ee', '#f59e0b', '#34d399', '#f87171', '#60a5fa', '#f472b6'];
+
+            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.borderColor = '#2d3748';
+
+            let D = { invoices: [], pso: [], soee: [], relation: [], match: [], ledger: [] };
+            const F = { phase: '', org: '', soee: '', pso: '' };
+            let view = {};
+            let activeTab = 'soee';
+            let page = 1;
+            const charts = {};
+
+            /* ---------- helpers ---------- */
+            const norm = v => String(v == null ? '' : v).trim();
+            const num = v => {
+                if (typeof v === 'number') return v;
+                const n = parseFloat(String(v || '').replace(/[₹,\s]/g, ''));
+                return isNaN(n) ? 0 : n;
+            };
+            const get = (r, keys) => {
+                for (let i = 0; i < keys.length; i++) {
+                    if (r[keys[i]] !== undefined && r[keys[i]] !== '') return r[keys[i]];
+                }
+                return '';
+            };
+            const orgOf = r => norm(get(r, ['Organisation', 'Organization']));
+            // "AVVNL, JVVNL" -> ['AVVNL', 'JVVNL']
+            const orgList = r => norm(get(r, ['Organisation', 'Organization']))
+                .split(/[,;\/&]|\band\b/i)
+                .map(s => s.trim())
+                .filter(Boolean);
+
+            // true if the row contains the selected organisation (or no organisation is selected)
+            const orgMatch = (r, sel) => {
+                if (!sel) return true;
+                const s = sel.toLowerCase();
+                return orgList(r).some(o => o.toLowerCase() === s);
+            };
+            const esc = s => String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            const sum = (rows, key) => rows.reduce((t, r) => t + num(r[key]), 0);
+            const distinct = arr => Array.from(new Set(arr.filter(x => x !== '')));
+            const natSort = arr => arr.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' }));
+
+            const fmt = n => n.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+            const short = n => {
+                const a = Math.abs(n);
+                if (a >= 1e7) return '₹' + (n / 1e7).toFixed(2) + ' Cr';
+                if (a >= 1e5) return '₹' + (n / 1e5).toFixed(2) + ' L';
+                return '₹' + fmt(n);
+            };
+
+            function monthKey(s) {                       // dd/MM/yyyy -> yyyy-MM
+                const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(norm(s));
+                return m ? m[3] + '-' + m[2] : '';
+            }
+            function monthLabel(k) {
+                const p = k.split('-');
+                return new Date(+p[0], +p[1] - 1, 1).toLocaleString('en-GB', { month: 'short', year: '2-digit' });
+            }
+
+            /* ---------- table definitions ---------- */
+            const col = (label, type, keys, cls) => ({ label: label, type: type || 'text', keys: [].concat(keys), cls: cls || '' });
+
+            const TABS = [
+                {
+                    id: 'soee', label: 'SoEE', cols: [
+                        col('SoEE No.', 'text', 'SoEE No.'), col('SoEE Date', 'text', 'SoEE Date'),
+                        col('Organisation', 'text', ['Organization', 'Organisation']), col('Phase', 'text', 'Phase'),
+                        col('Description', 'text', 'SoEE description', 'wrap'),
+                        col('Base Amount', 'num', 'Base Amount'), col('RISL Service Charges', 'num', 'RISL Service Charges'),
+                        col('GST (9% + 9%)', 'num', 'GST (9% + 9%)'), col('SoEE Amount', 'num', 'SoEE Amount'),
+                        col('Credited Amount', 'num', 'SoEE wise Credited Amount'), col('Pending Amount', 'num', 'Pending Amount'),
+                        col('Period From', 'text', 'Period From'), col('Period To', 'text', 'Period To')
+                    ]
+                },
+                {
+                    id: 'pso', label: 'PSO', cols: [
+                        col('S. No.', 'text', 'S. No.'), col('Phase', 'text', 'Phase'), col('PSO No.', 'text', 'PSO No.'),
+                        col('PSO Date', 'text', 'PSO Date'), col('Organisation', 'text', ['Organisation', 'Organization']),
+                        col('Bill Amount (excl. GST)', 'num', 'Bill amount (excluding GST)'), col('GST (18%)', 'num', 'GST (18%)'),
+                        col('Gross Amount', 'num', 'Gross Amount'), col('Approved Amount', 'num', 'Approved Amount'),
+                        col('LD or Penalty', 'num', 'LD or Penalty'), col('Recovery', 'num', 'Recovery'),
+                        col('Withheld Amount', 'num', 'Withheld Amount'), col('Withheld Released', 'num', 'Withheld Amount Released'),
+                        col('Sanctioned Amount', 'num', 'Sanctioned Amount'), col('TDS %', 'text', 'TDS %'),
+                        col('TDS on Bill', 'num', 'TDS on Bill Amount'), col('TDS on GST (2%)', 'num', 'TDS on GST (2%) of Gross Amount'),
+                        col('Interest on TDS @1%', 'num', 'Interest on TDS @1%'), col('Net Payable', 'num', 'Net Payable Amount')
+                    ]
+                },
+                {
+                    id: 'invoices', label: 'Invoices', cols: [
+                        col('S. No.', 'text', 'S. No.'), col('Phase', 'text', 'Phase'), col('SoEE No.', 'text', 'SoEE No.'),
+                        col('SoEE Date', 'text', 'SoEE Date'), col('PSO No.', 'text', 'PSO No.'), col('PSO Date', 'text', 'PSO Date'),
+                        col('Invoice No.', 'text', 'Invoice No.'), col('Invoice Date', 'text', 'Invoice Date'),
+                        col('Period From', 'text', 'Invoice Period from'), col('Period To', 'text', 'Invoice Period to'),
+                        col('Order No', 'text', 'Order No'), col('Order Date', 'text', 'Order Date'),
+                        col('Taxable Value', 'num', 'Taxable Value'), col('CGST', 'num', 'CGST'), col('SGST', 'num', 'SGST'),
+                        col('Total Amount', 'num', 'Total Amount'), col('Penalty', 'num', 'Invoice Penalty'),
+                        col('Component', 'text', 'Component'), col('Organisation', 'text', ['Organisation', 'Organization'])
+                    ]
+                },
+                {
+                    id: 'ledger', label: 'Ledger', cols: [
+                        col('S. No.', 'text', 'S. No.'),
+                        col('Transaction No', 'text', ['Transaction No', 'Transaction No.']),
+                        col('Transaction Date', 'text', 'Transaction Date'),
+                        col('Transaction Particulars', 'text', 'Transaction Particulars', 'wrap'),
+                        col('Ledger Entry Date', 'text', 'Ledger Entry Date'),
+                        col('Credit Amount', 'num', 'Credit Amount'),
+                        col('Organisation', 'text', ['Organisation', 'Organization']),
+                        col('Voucher', 'text', 'VOUCHER'),
+                        col('Related Voucher', 'text', 'RELATED VOUCHER'),
+                        col('Type', 'text', 'TYPE')
+                    ]
+                },
+                {
+                    id: 'match', label: 'Ledger Match', cols: [
+                        col('Ledger Entry Date', 'text', 'Ledger Entry Date'), col('Credit Amount', 'num', 'Credit Amount'),
+                        col('Organisation', 'text', ['Organisation', 'Organization']), col('Voucher', 'text', 'VOUCHER'),
+                        col('Related Voucher', 'text', 'RELATED VOUCHER'), col('SoEE No.', 'text', 'SoEE No.'),
+                        col('SoEE Date', 'text', 'SoEE Date'), col('Int-Letter', 'text', 'Int-Letter'),
+                        col('Rajkaj', 'text', 'Rajkaj'), col('Letter Date', 'text', 'Letter Date')
+                    ]
+                }
+            ];
+
+            /* ---------- load data ---------- */
+            function loadData() {
+                $('#loadingOverlay').show();
+                $('#errorBox').hide();
+
+                $.ajax({
+                    url: SCRIPT_URL,
+                    dataType: 'jsonp',
+                    timeout: 60000,
+                    data: { action: 'getPaymentData', _: Date.now() }
+                })
+                    .done(function (res) {
+                        if (!res || !res.success) {
+                            showError((res && res.error) || 'Could not load payment data.');
+                            return;
+                        }
+                        D = res.data;
+                        buildFilters(true);
+                        page = 1;
+                        refresh();
+                        $('#lastUpdated').text('Updated ' + new Date().toLocaleString('en-GB'));
+                    })
+                    .fail(function () {
+                        showError('Request failed. Check the web app URL and that the latest version is deployed.');
+                    })
+                    .always(function () { $('#loadingOverlay').hide(); });
+            }
+
+            function showError(msg) { $('#errorBox').text(msg).show(); }
+
+            /* ---------- filters ---------- */
+            function fillSelect($el, values, current, placeholder) {
+                let html = '<option value="">' + placeholder + '</option>';
+                natSort(values.slice()).forEach(function (v) {
+                    html += '<option value="' + esc(v) + '"' + (v === current ? ' selected' : '') + '>' + esc(v) + '</option>';
+                });
+                $el.html(html);
+                if (current && values.indexOf(current) === -1) return '';   // current value no longer valid
+                return current;
+            }
+
+            function baseMatch(r) {
+                return (!F.phase || norm(r['Phase']) === F.phase) && orgMatch(r, F.org);
+            }
+
+            function buildFilters(full) {
+                if (full) {
+                    const all = [].concat(D.relation, D.soee, D.pso, D.invoices);
+                    F.phase = fillSelect($('#fPhase'), distinct(all.map(r => norm(r['Phase']))), F.phase, 'All phases');
+                    F.org = fillSelect($('#fOrg'), distinct([].concat.apply([], D.relation.map(orgList))), F.org, 'All organisations');
+                }
+                F.soee = fillSelect($('#fSoee'),
+                    distinct(D.soee.filter(baseMatch).map(r => norm(r['SoEE No.']))), F.soee, 'All SoEE');
+                F.pso = fillSelect($('#fPso'),
+                    distinct(D.pso.filter(baseMatch).map(r => norm(r['PSO No.']))), F.pso, 'All PSO');
+            }
+
+            $('#fPhase').on('change', function () { F.phase = this.value; buildFilters(false); page = 1; refresh(); });
+            $('#fOrg').on('change', function () { F.org = this.value; buildFilters(false); page = 1; refresh(); });
+            $('#fSoee').on('change', function () { F.soee = this.value; page = 1; refresh(); });
+            $('#fPso').on('change', function () { F.pso = this.value; page = 1; refresh(); });
+
+            $('#resetBtn').on('click', function () {
+                F.phase = F.org = F.soee = F.pso = '';
+                buildFilters(true);
+                page = 1;
+                refresh();
+            });
+
+            $('#refreshBtn').on('click', loadData);
+
+            /* ---------- apply filters ---------- */
+            function compute() {
+                const anyKey = !!(F.soee || F.pso);
+
+                // Relation table links SoEE, PSO and invoices together
+                const rel = D.relation.filter(function (r) {
+                    return baseMatch(r) &&
+                        (!F.soee || norm(r['SoEE No.']) === F.soee) &&
+                        (!F.pso || norm(r['PSO No.']) === F.pso);
+                });
+                const soeeSet = new Set(rel.map(r => norm(r['SoEE No.'])));
+                const psoSet = new Set(rel.map(r => norm(r['PSO No.'])));
+
+                const soee = D.soee.filter(function (r) {
+                    const no = norm(r['SoEE No.']);
+                    return baseMatch(r) && (!F.soee || no === F.soee) && (!F.pso || soeeSet.has(no));
+                });
+                const pso = D.pso.filter(function (r) {
+                    const no = norm(r['PSO No.']);
+                    return baseMatch(r) && (!F.pso || no === F.pso) && (!F.soee || psoSet.has(no));
+                });
+                const invoices = D.invoices.filter(function (r) {
+                    return baseMatch(r) &&
+                        (!F.soee || norm(r['SoEE No.']) === F.soee) &&
+                        (!F.pso || norm(r['PSO No.']) === F.pso);
+                });
+                const match = D.match.filter(function (r) {
+                    const no = norm(r['SoEE No.']);
+                    return orgMatch(r, F.org) &&
+                        (!F.soee || no === F.soee) &&
+                        (!F.pso || soeeSet.has(no));
+                });
+
+                // Vouchers that belong to the currently filtered Ledger Match rows
+                const voucherKey = v => norm(v).toLowerCase();
+                const matchVouchers = new Set(
+                    match.map(r => voucherKey(r['VOUCHER'])).filter(Boolean)
+                );
+
+                const ledger = D.ledger.filter(function (r) {
+                    return orgMatch(r, F.org) &&
+                        (!(F.soee || F.pso) || matchVouchers.has(voucherKey(r['VOUCHER'])));
+                });
+
+                // const ledger = D.ledger.filter(function (r) {
+                //     return orgMatch(r, F.org);
+                // });
+
+                return { soee: soee, pso: pso, invoices: invoices, relation: rel, match: match, ledger: ledger };
+            }
+
+            function refresh() {
+                view = compute();
+                renderKpis();
+                renderCharts();
+                renderTabs();
+                renderTable();
+            }
+
+            /* ---------- KPIs ---------- */
+            function renderKpis() {
+                const phases = distinct([].concat(view.soee, view.pso, view.invoices).map(r => norm(r['Phase'])));
+                const orgs = distinct([].concat.apply([], [].concat(view.soee, view.pso, view.invoices).map(orgList)));
+                const soeeNos = distinct(view.soee.map(r => norm(r['SoEE No.'])));
+                const psoNos = distinct(view.pso.map(r => norm(r['PSO No.'])));
+                const invNos = distinct(view.invoices.map(r => norm(r['Invoice No.'])));
+
+                $('#kpiPhase').text(phases.length);
+                $('#kpiPhaseSub').text(orgs.length + (orgs.length === 1 ? ' organisation' : ' organisations'));
+
+                $('#kpiSoee').text(soeeNos.length);
+                $('#kpiSoeeSub').text('Amount ' + short(sum(view.soee, 'SoEE Amount')) +
+                    ' · Pending ' + short(sum(view.soee, 'Pending Amount')));
+
+                $('#kpiPso').text(psoNos.length);
+                $('#kpiPsoSub').text('Sanctioned ' + short(sum(view.pso, 'Sanctioned Amount')) +
+                    ' · Net ' + short(sum(view.pso, 'Net Payable Amount')));
+
+                $('#kpiInv').text(invNos.length);
+                $('#kpiInvSub').text('Total ' + short(sum(view.invoices, 'Total Amount')));
+            }
+
+            /* ---------- charts ---------- */
+            function makeChart(id, cfg) {
+                if (charts[id]) charts[id].destroy();
+                charts[id] = new Chart(document.getElementById(id), cfg);
+            }
+
+            function groupBy(rows, keyFn) {
+                const map = {};
+                rows.forEach(function (r) {
+                    const k = keyFn(r) || 'Unspecified';
+                    (map[k] = map[k] || []).push(r);
+                });
+                return map;
+            }
+
+            const axisMoney = { ticks: { callback: v => short(v) }, grid: { color: '#1f2937' } };
+            const baseOpts = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { boxWidth: 12 } },
+                    tooltip: { callbacks: { label: c => ' ' + c.dataset.label + ': ' + short(c.parsed.y !== undefined ? c.parsed.y : c.parsed) } }
+                }
+            };
+
+            function renderCharts() {
+                // 1. SoEE by organisation
+                const sg = groupBy(view.soee, orgOf);
+                const sLabels = natSort(Object.keys(sg));
+                makeChart('chSoeeOrg', {
+                    type: 'bar',
+                    data: {
+                        labels: sLabels, datasets: [
+                            { label: 'SoEE Amount', data: sLabels.map(k => sum(sg[k], 'SoEE Amount')), backgroundColor: COLORS[0] },
+                            { label: 'Credited', data: sLabels.map(k => sum(sg[k], 'SoEE wise Credited Amount')), backgroundColor: COLORS[3] },
+                            { label: 'Pending', data: sLabels.map(k => sum(sg[k], 'Pending Amount')), backgroundColor: COLORS[2] }
+                        ]
+                    },
+                    options: Object.assign({}, baseOpts, { scales: { y: axisMoney, x: { grid: { display: false } } } })
+                });
+
+                // 2. PSO chart grouped by PSO No.
+                const pg = groupBy(view.pso, r => norm(r['PSO No.']));
+                const pLabels = natSort(Object.keys(pg));
+                makeChart('chPsoOrg', {
+                    type: 'bar',
+                    data: {
+                        labels: pLabels, datasets: [
+                            { label: 'Approved', data: pLabels.map(k => sum(pg[k], 'Approved Amount')), backgroundColor: COLORS[1] },
+                            { label: 'Sanctioned', data: pLabels.map(k => sum(pg[k], 'Sanctioned Amount')), backgroundColor: COLORS[0] },
+                            { label: 'Net Payable', data: pLabels.map(k => sum(pg[k], 'Net Payable Amount')), backgroundColor: COLORS[3] }
+                        ]
+                    },
+                    options: Object.assign({}, baseOpts, {
+                        scales: {
+                            y: axisMoney,
+                            x: { grid: { display: false }, ticks: { maxRotation: 60, minRotation: 0 } }
+                        }
+                    })
+                });
+                // 3. Net payable by phase (doughnut)
+                const phg = groupBy(view.pso, r => norm(r['Phase']));
+                const phLabels = natSort(Object.keys(phg));
+                makeChart('chPhase', {
+                    type: 'doughnut',
+                    data: {
+                        labels: phLabels, datasets: [{
+                            data: phLabels.map(k => sum(phg[k], 'Net Payable Amount')),
+                            backgroundColor: COLORS, borderColor: '#111827', borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, cutout: '62%',
+                        plugins: {
+                            legend: { position: 'right', labels: { boxWidth: 12 } },
+                            tooltip: { callbacks: { label: c => ' ' + c.label + ': ' + short(c.parsed) } }
+                        }
+                    }
+                });
+
+                // 4. Invoice amount by month
+                const mg = groupBy(view.invoices, r => monthKey(r['Invoice Date']));
+                delete mg['Unspecified'];
+                const mKeys = Object.keys(mg).sort();
+                makeChart('chInvMonth', {
+                    type: 'line',
+                    data: {
+                        labels: mKeys.map(monthLabel), datasets: [{
+                            label: 'Invoice Amount', data: mKeys.map(k => sum(mg[k], 'Total Amount')),
+                            borderColor: COLORS[1], backgroundColor: 'rgba(34,211,238,.15)', fill: true, tension: .3, pointRadius: 3
+                        }]
+                    },
+                    options: Object.assign({}, baseOpts, { scales: { y: axisMoney, x: { grid: { display: false } } } })
+                });
+            }
+
+            /* ---------- tabs + table ---------- */
+            function renderTabs() {
+                let html = '';
+                TABS.forEach(function (t) {
+                    html += '<button type="button" class="data-tab' + (t.id === activeTab ? ' active' : '') +
+                        '" data-tab="' + t.id + '">' + t.label +
+                        '<span class="badge">' + (view[t.id] || []).length + '</span></button>';
+                });
+                $('#dataTabs').html(html);
+            }
+
+            $(document).on('click', '.data-tab', function () {
+                activeTab = $(this).data('tab');
+                page = 1;
+                renderTabs();
+                renderTable();
+            });
+
+            function renderTable() {
+                const tab = TABS.filter(t => t.id === activeTab)[0];
+                const rows = view[activeTab] || [];
+                const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+                if (page > pages) page = pages;
+
+                let head = '<tr>';
+                tab.cols.forEach(function (c) {
+                    head += '<th class="' + (c.type === 'num' ? 'num' : '') + '">' + esc(c.label) + '</th>';
+                });
+                $('#dataHead').html(head + '</tr>');
+
+                if (!rows.length) {
+                    $('#dataBody').html('<tr><td colspan="' + tab.cols.length + '"><div class="empty-state">' +
+                        '<i class="bi bi-inbox"></i>No records found for the selected filters.</div></td></tr>');
+                    $('#pagerInfo').text('0 records');
+                    $('#prevPage, #nextPage').prop('disabled', true);
+                    return;
+                }
+
+                const start = (page - 1) * PAGE_SIZE;
+                let body = '';
+                rows.slice(start, start + PAGE_SIZE).forEach(function (r) {
+                    body += '<tr>';
+                    tab.cols.forEach(function (c) {
+                        const raw = get(r, c.keys);
+                        let txt;
+                        if (c.type === 'num') txt = raw === '' ? '—' : fmt(num(raw));
+                        else txt = raw === '' ? '—' : esc(raw);
+                        const cls = (c.type === 'num' ? 'num ' : '') + c.cls;
+                        body += '<td class="' + cls + '"' + (c.cls === 'wrap' ? ' title="' + esc(raw) + '"' : '') + '>' + txt + '</td>';
+                    });
+                    body += '</tr>';
+                });
+                $('#dataBody').html(body);
+
+                $('#pagerInfo').text('Showing ' + (start + 1) + '–' + Math.min(start + PAGE_SIZE, rows.length) +
+                    ' of ' + rows.length + ' records');
+                $('#prevPage').prop('disabled', page <= 1);
+                $('#nextPage').prop('disabled', page >= pages);
+            }
+
+            $('#prevPage').on('click', function () { if (page > 1) { page--; renderTable(); } });
+            $('#nextPage').on('click', function () { page++; renderTable(); });
+
+            loadData();
+        });
+    </script>
+
+</body>
+
+</html>
