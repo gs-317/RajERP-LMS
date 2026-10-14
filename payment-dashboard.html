@@ -435,13 +435,13 @@
             </div>
             <div class="col-12 col-lg-6">
                 <div class="panel">
-                    <div class="panel-title">PSO: Approved, Sanctioned and Net Payable by PSO No.</div>
+                    <div class="panel-title">PSO: Approved Amount, Penalty / Recovery / Withhold and Net Payment against PSO No.</div>
                     <div class="chart-box"><canvas id="chPsoOrg"></canvas></div>
                 </div>
             </div>
             <div class="col-12 col-lg-5">
                 <div class="panel">
-                    <div class="panel-title">Net Payable by Phase</div>
+                    <div class="panel-title">Net Payment by Phase</div>
                     <div class="chart-box"><canvas id="chPhase"></canvas></div>
                 </div>
             </div>
@@ -550,6 +550,17 @@
                 .map(s => s.trim())
                 .filter(Boolean);
 
+            // "Phase-1,2" -> ['Phase-1','Phase-2'];  "Phase-1, Phase-3" -> ['Phase-1','Phase-3']
+            const phaseList = r => {
+                const parts = norm(r['Phase']).split(/[,;&\/]|\band\b/i).map(s => s.trim()).filter(Boolean);
+                if (!parts.length) return [];
+                const m = /^(.*?)(\d+)\s*$/.exec(parts[0]);
+                const prefix = m ? m[1] : '';                       // "Phase-"
+                return parts.map((p, i) => (i > 0 && /^\d+$/.test(p)) ? prefix + p : p);
+            };
+
+            const phaseMatch = (r, sel) => !sel || phaseList(r).some(p => p.toLowerCase() === sel.toLowerCase());
+
             // true if the row contains the selected organisation (or no organisation is selected)
             const orgMatch = (r, sel) => {
                 if (!sel) return true;
@@ -601,7 +612,7 @@
                         col('Bill Amount (excl. GST)', 'num', 'Bill amount (excluding GST)'), col('GST (18%)', 'num', 'GST (18%)'),
                         col('Gross Amount', 'num', 'Gross Amount'), col('Approved Amount', 'num', 'Approved Amount'),
                         col('LD or Penalty', 'num', 'LD or Penalty'), col('Recovery', 'num', 'Recovery'),
-                        col('Withheld Amount', 'num', 'Withheld Amount'), col('Withheld Released', 'num', 'Withheld Amount Released'),
+                        col('Withheld Amount', 'num', 'Withheld Amount'), col('Withheld Released', 'text', 'Withheld Amount Released'),
                         col('Sanctioned Amount', 'num', 'Sanctioned Amount'), col('TDS %', 'text', 'TDS %'),
                         col('TDS on Bill', 'num', 'TDS on Bill Amount'), col('TDS on GST (2%)', 'num', 'TDS on GST (2%) of Gross Amount'),
                         col('Interest on TDS @1%', 'num', 'Interest on TDS @1%'), col('Net Payable', 'num', 'Net Payable Amount')
@@ -675,93 +686,247 @@
             function showError(msg) { $('#errorBox').text(msg).show(); }
 
             /* ---------- filters ---------- */
-            function fillSelect($el, values, current, placeholder) {
+            // function fillSelect($el, values, current, placeholder) {
+            //     let html = '<option value="">' + placeholder + '</option>';
+            //     natSort(values.slice()).forEach(function (v) {
+            //         html += '<option value="' + esc(v) + '"' + (v === current ? ' selected' : '') + '>' + esc(v) + '</option>';
+            //     });
+            //     $el.html(html);
+            //     if (current && values.indexOf(current) === -1) return '';   // current value no longer valid
+            //     return current;
+            // }
+
+            // function baseMatch(r) {
+            //     return (!F.phase || norm(r['Phase']) === F.phase) && orgMatch(r, F.org);
+            // }
+
+            // function buildFilters(full) {
+            //     if (full) {
+            //         const all = [].concat(D.relation, D.soee, D.pso, D.invoices);
+            //         F.phase = fillSelect($('#fPhase'), distinct(all.map(r => norm(r['Phase']))), F.phase, 'All phases');
+            //         F.org = fillSelect($('#fOrg'), distinct([].concat.apply([], D.relation.map(orgList))), F.org, 'All organisations');
+            //     }
+            //     F.soee = fillSelect($('#fSoee'),
+            //         distinct(D.soee.filter(baseMatch).map(r => norm(r['SoEE No.']))), F.soee, 'All SoEE');
+            //     F.pso = fillSelect($('#fPso'),
+            //         distinct(D.pso.filter(baseMatch).map(r => norm(r['PSO No.']))), F.pso, 'All PSO');
+            // }
+
+            // items: plain strings, or {v: value, l: label}
+            function fillSelect($el, items, current, placeholder) {
+                const list = items.map(i => typeof i === 'string' ? { v: i, l: i } : i);
                 let html = '<option value="">' + placeholder + '</option>';
-                natSort(values.slice()).forEach(function (v) {
-                    html += '<option value="' + esc(v) + '"' + (v === current ? ' selected' : '') + '>' + esc(v) + '</option>';
+                list.forEach(function (i) {
+                    html += '<option value="' + esc(i.v) + '"' + (i.v === current ? ' selected' : '') + '>' + esc(i.l) + '</option>';
                 });
                 $el.html(html);
-                if (current && values.indexOf(current) === -1) return '';   // current value no longer valid
-                return current;
+                return (current && !list.some(i => i.v === current)) ? '' : current;
             }
 
             function baseMatch(r) {
-                return (!F.phase || norm(r['Phase']) === F.phase) && orgMatch(r, F.org);
+                return phaseMatch(r, F.phase) && orgMatch(r, F.org);
             }
 
-            function buildFilters(full) {
-                if (full) {
-                    const all = [].concat(D.relation, D.soee, D.pso, D.invoices);
-                    F.phase = fillSelect($('#fPhase'), distinct(all.map(r => norm(r['Phase']))), F.phase, 'All phases');
-                    F.org = fillSelect($('#fOrg'), distinct([].concat.apply([], D.relation.map(orgList))), F.org, 'All organisations');
+            // function buildFilters(full) {
+            //     if (full) {
+
+            //         F.phase = fillSelect($('#fPhase'),
+            //             natSort(distinct([].concat.apply([], D.relation.map(phaseList)))), F.phase, 'All phases');
+            //         F.org = fillSelect($('#fOrg'),
+            //             natSort(distinct([].concat.apply([], D.relation.map(orgList)))), F.org, 'All organisations');
+            //     }
+
+
+            //     const seen = {};
+            //     D.soee.filter(baseMatch).forEach(function (r) {
+            //         const no = norm(r['SoEE No.']);
+            //         if (!no) return;
+            //         const org = orgOf(r);
+            //         seen[no + '||' + org] = no + ' : ' + (org || '—');
+            //     });
+            //     const soeeItems = Object.keys(seen)
+            //         .map(k => ({ v: k, l: seen[k] }))
+            //         .sort((a, b) => a.l.localeCompare(b.l, undefined, { numeric: true, sensitivity: 'base' }));
+            //     F.soee = fillSelect($('#fSoee'), soeeItems, F.soee, 'All SoEE');
+
+            //     F.pso = fillSelect($('#fPso'),
+            //         natSort(distinct(D.pso.filter(baseMatch).map(r => norm(r['PSO No.'])))), F.pso, 'All PSO');
+            // }
+            // Does a relation row satisfy every selected filter except the one named in `skip`?
+            function relOk(r, skip) {
+                if (skip !== 'phase' && !phaseMatch(r, F.phase)) return false;
+                if (skip !== 'org' && !orgMatch(r, F.org)) return false;
+                if (skip !== 'soee' && F.soee) {
+                    const p = F.soee.split('||');
+                    if (!(norm(r['SoEE No.']) === p[0] && orgMatch(r, p[1]))) return false;
                 }
-                F.soee = fillSelect($('#fSoee'),
-                    distinct(D.soee.filter(baseMatch).map(r => norm(r['SoEE No.']))), F.soee, 'All SoEE');
-                F.pso = fillSelect($('#fPso'),
-                    distinct(D.pso.filter(baseMatch).map(r => norm(r['PSO No.']))), F.pso, 'All PSO');
+                if (skip !== 'pso' && F.pso && norm(r['PSO No.']) !== F.pso) return false;
+                return true;
             }
 
-            $('#fPhase').on('change', function () { F.phase = this.value; buildFilters(false); page = 1; refresh(); });
-            $('#fOrg').on('change', function () { F.org = this.value; buildFilters(false); page = 1; refresh(); });
-            $('#fSoee').on('change', function () { F.soee = this.value; page = 1; refresh(); });
-            $('#fPso').on('change', function () { F.pso = this.value; page = 1; refresh(); });
+            function buildFilters() {
+                // Run until stable, because clearing one invalid selection can affect the others
+                for (let pass = 0; pass < 4; pass++) {
+                    const before = [F.phase, F.org, F.soee, F.pso].join('|');
 
-            $('#resetBtn').on('click', function () {
-                F.phase = F.org = F.soee = F.pso = '';
-                buildFilters(true);
+                    // ---- Phase ----
+                    F.phase = fillSelect($('#fPhase'),
+                        natSort(distinct([].concat.apply([], D.relation.filter(r => relOk(r, 'phase')).map(phaseList)))),
+                        F.phase, 'All phases');
+
+                    // ---- Organisation ----
+                    F.org = fillSelect($('#fOrg'),
+                        natSort(distinct([].concat.apply([], D.relation.filter(r => relOk(r, 'org')).map(orgList)))),
+                        F.org, 'All organisations');
+
+                    // ---- SoEE ("SoEE NO : Organisation") ----
+                    const seen = {};
+                    const addSoee = (no, org) => { if (no) seen[no + '||' + org] = no + ' : ' + (org || '—'); };
+
+                    D.relation.filter(r => relOk(r, 'soee')).forEach(function (r) {
+                        orgList(r).forEach(function (o) {
+                            if (!F.org || o.toLowerCase() === F.org.toLowerCase()) addSoee(norm(r['SoEE No.']), o);
+                        });
+                    });
+                    if (!F.pso) {   // SoEE rows that have no relation entry yet
+                        D.soee.filter(r => phaseMatch(r, F.phase) && orgMatch(r, F.org))
+                            .forEach(r => addSoee(norm(r['SoEE No.']), orgOf(r)));
+                    }
+                    const soeeItems = Object.keys(seen)
+                        .map(k => ({ v: k, l: seen[k] }))
+                        .sort((a, b) => a.l.localeCompare(b.l, undefined, { numeric: true, sensitivity: 'base' }));
+                    F.soee = fillSelect($('#fSoee'), soeeItems, F.soee, 'All SoEE');
+
+                    // ---- PSO ----
+                    let psoNos = D.relation.filter(r => relOk(r, 'pso')).map(r => norm(r['PSO No.']));
+                    if (!F.soee) {  // PSO rows that have no relation entry yet
+                        psoNos = psoNos.concat(
+                            D.pso.filter(r => phaseMatch(r, F.phase) && orgMatch(r, F.org)).map(r => norm(r['PSO No.'])));
+                    }
+                    F.pso = fillSelect($('#fPso'), natSort(distinct(psoNos)), F.pso, 'All PSO');
+
+                    if ([F.phase, F.org, F.soee, F.pso].join('|') === before) break;
+                }
+            }
+
+            $('#fPhase, #fOrg, #fSoee, #fPso').on('change', function () {
+                F.phase = $('#fPhase').val();
+                F.org = $('#fOrg').val();
+                F.soee = $('#fSoee').val();
+                F.pso = $('#fPso').val();
+                buildFilters();
                 page = 1;
                 refresh();
             });
 
+            $('#resetBtn').on('click', function () {
+                F.phase = F.org = F.soee = F.pso = '';
+                buildFilters();
+                page = 1;
+                refresh();
+            });
+
+            // $('#fPhase').on('change', function () { F.phase = this.value; buildFilters(false); page = 1; refresh(); });
+            // $('#fOrg').on('change', function () { F.org = this.value; buildFilters(false); page = 1; refresh(); });
+            // $('#fSoee').on('change', function () { F.soee = this.value; page = 1; refresh(); });
+            // $('#fPso').on('change', function () { F.pso = this.value; page = 1; refresh(); });
+
+            // $('#resetBtn').on('click', function () {
+            //     F.phase = F.org = F.soee = F.pso = '';
+            //     buildFilters(true);
+            //     page = 1;
+            //     refresh();
+            // });
+
             $('#refreshBtn').on('click', loadData);
 
             /* ---------- apply filters ---------- */
+            // function compute() {
+            //     const anyKey = !!(F.soee || F.pso);
+
+
+            //     const rel = D.relation.filter(function (r) {
+            //         return baseMatch(r) &&
+            //             (!F.soee || norm(r['SoEE No.']) === F.soee) &&
+            //             (!F.pso || norm(r['PSO No.']) === F.pso);
+            //     });
+            //     const soeeSet = new Set(rel.map(r => norm(r['SoEE No.'])));
+            //     const psoSet = new Set(rel.map(r => norm(r['PSO No.'])));
+
+            //     const soee = D.soee.filter(function (r) {
+            //         const no = norm(r['SoEE No.']);
+            //         return baseMatch(r) && (!F.soee || no === F.soee) && (!F.pso || soeeSet.has(no));
+            //     });
+            //     const pso = D.pso.filter(function (r) {
+            //         const no = norm(r['PSO No.']);
+            //         return baseMatch(r) && (!F.pso || no === F.pso) && (!F.soee || psoSet.has(no));
+            //     });
+            //     const invoices = D.invoices.filter(function (r) {
+            //         return baseMatch(r) &&
+            //             (!F.soee || norm(r['SoEE No.']) === F.soee) &&
+            //             (!F.pso || norm(r['PSO No.']) === F.pso);
+            //     });
+            //     const match = D.match.filter(function (r) {
+            //         const no = norm(r['SoEE No.']);
+            //         return orgMatch(r, F.org) &&
+            //             (!F.soee || no === F.soee) &&
+            //             (!F.pso || soeeSet.has(no));
+            //     });
+
+            //     // Vouchers that belong to the currently filtered Ledger Match rows
+            //     const voucherKey = v => norm(v).toLowerCase();
+            //     const matchVouchers = new Set(
+            //         match.map(r => voucherKey(r['VOUCHER'])).filter(Boolean)
+            //     );
+
+            //     const ledger = D.ledger.filter(function (r) {
+            //         return orgMatch(r, F.org) &&
+            //             (!(F.soee || F.pso) || matchVouchers.has(voucherKey(r['VOUCHER'])));
+            //     });
+
+            //     return { soee: soee, pso: pso, invoices: invoices, relation: rel, match: match, ledger: ledger };
+            // }
+
             function compute() {
-                const anyKey = !!(F.soee || F.pso);
+                const sel = F.soee ? F.soee.split('||') : null;     // [soeeNo, organisation]
+                const sNo = sel ? sel[0] : '';
+                const sOrg = sel ? sel[1] : '';
 
-                // Relation table links SoEE, PSO and invoices together
-                const rel = D.relation.filter(function (r) {
-                    return baseMatch(r) &&
-                        (!F.soee || norm(r['SoEE No.']) === F.soee) &&
-                        (!F.pso || norm(r['PSO No.']) === F.pso);
-                });
-                const soeeSet = new Set(rel.map(r => norm(r['SoEE No.'])));
+                // row belongs to the selected SoEE (number AND organisation)
+                const soeeOk = r => !sel || (norm(r['SoEE No.']) === sNo && orgMatch(r, sOrg));
+
+                // "soeeNo||org" keys of a row (a row with several organisations gives several keys)
+                const soeeKeys = r => orgList(r).map(o => norm(r['SoEE No.']).toLowerCase() + '||' + o.toLowerCase());
+
+                // Relation table links SoEE, PSO and invoices
+                const rel = D.relation.filter(r =>
+                    baseMatch(r) && soeeOk(r) && (!F.pso || norm(r['PSO No.']) === F.pso));
+
+                const keySet = new Set();
+                rel.forEach(r => soeeKeys(r).forEach(k => keySet.add(k)));
                 const psoSet = new Set(rel.map(r => norm(r['PSO No.'])));
+                const inRel = r => soeeKeys(r).some(k => keySet.has(k));
 
-                const soee = D.soee.filter(function (r) {
-                    const no = norm(r['SoEE No.']);
-                    return baseMatch(r) && (!F.soee || no === F.soee) && (!F.pso || soeeSet.has(no));
-                });
-                const pso = D.pso.filter(function (r) {
+                const soee = D.soee.filter(r =>
+                    baseMatch(r) && soeeOk(r) && (!F.pso || inRel(r)));
+
+                const pso = D.pso.filter(r => {
                     const no = norm(r['PSO No.']);
-                    return baseMatch(r) && (!F.pso || no === F.pso) && (!F.soee || psoSet.has(no));
-                });
-                const invoices = D.invoices.filter(function (r) {
-                    return baseMatch(r) &&
-                        (!F.soee || norm(r['SoEE No.']) === F.soee) &&
-                        (!F.pso || norm(r['PSO No.']) === F.pso);
-                });
-                const match = D.match.filter(function (r) {
-                    const no = norm(r['SoEE No.']);
-                    return orgMatch(r, F.org) &&
-                        (!F.soee || no === F.soee) &&
-                        (!F.pso || soeeSet.has(no));
+                    return baseMatch(r) && (!F.pso || no === F.pso) && (!sel || psoSet.has(no));
                 });
 
-                // Vouchers that belong to the currently filtered Ledger Match rows
+                const invoices = D.invoices.filter(r =>
+                    baseMatch(r) && soeeOk(r) && (!F.pso || norm(r['PSO No.']) === F.pso));
+
+                const match = D.match.filter(r =>
+                    orgMatch(r, F.org) && soeeOk(r) && (!F.pso || inRel(r)));
+
+                // Ledger follows the filtered Ledger Match rows through VOUCHER
                 const voucherKey = v => norm(v).toLowerCase();
-                const matchVouchers = new Set(
-                    match.map(r => voucherKey(r['VOUCHER'])).filter(Boolean)
-                );
-
-                const ledger = D.ledger.filter(function (r) {
-                    return orgMatch(r, F.org) &&
-                        (!(F.soee || F.pso) || matchVouchers.has(voucherKey(r['VOUCHER'])));
-                });
-
-                // const ledger = D.ledger.filter(function (r) {
-                //     return orgMatch(r, F.org);
-                // });
+                const matchVouchers = new Set(match.map(r => voucherKey(r['VOUCHER'])).filter(Boolean));
+                const ledger = D.ledger.filter(r =>
+                    orgMatch(r, F.org) &&
+                    (!(F.soee || F.pso) || matchVouchers.has(voucherKey(r['VOUCHER']))));
 
                 return { soee: soee, pso: pso, invoices: invoices, relation: rel, match: match, ledger: ledger };
             }
@@ -775,17 +940,44 @@
             }
 
             /* ---------- KPIs ---------- */
+            // function renderKpis() {
+            //     const phases = distinct([].concat(view.soee, view.pso, view.invoices).map(r => norm(r['Phase'])));
+            //     const orgs = distinct([].concat.apply([], [].concat(view.soee, view.pso, view.invoices).map(orgList)));
+            //     const soeeNos = distinct(view.soee.map(r => norm(r['SoEE No.'])));
+            //     const psoNos = distinct(view.pso.map(r => norm(r['PSO No.'])));
+            //     const invNos = distinct(view.invoices.map(r => norm(r['Invoice No.'])));
+
+            //     $('#kpiPhase').text(phases.length);
+            //     $('#kpiPhaseSub').text(orgs.length + (orgs.length === 1 ? ' organisation' : ' organisations'));
+
+            //     $('#kpiSoee').text(soeeNos.length);
+            //     $('#kpiSoeeSub').text('Amount ' + short(sum(view.soee, 'SoEE Amount')) +
+            //         ' · Pending ' + short(sum(view.soee, 'Pending Amount')));
+
+            //     $('#kpiPso').text(psoNos.length);
+            //     $('#kpiPsoSub').text('Sanctioned ' + short(sum(view.pso, 'Sanctioned Amount')) +
+            //         ' · Net ' + short(sum(view.pso, 'Net Payable Amount')));
+
+            //     $('#kpiInv').text(invNos.length);
+            //     $('#kpiInvSub').text('Total ' + short(sum(view.invoices, 'Total Amount')));
+            // }
+
             function renderKpis() {
-                const phases = distinct([].concat(view.soee, view.pso, view.invoices).map(r => norm(r['Phase'])));
-                const orgs = distinct([].concat.apply([], [].concat(view.soee, view.pso, view.invoices).map(orgList)));
-                const soeeNos = distinct(view.soee.map(r => norm(r['SoEE No.'])));
+                const all = [].concat(view.soee, view.pso, view.invoices);
+
+                // "Phase-1,2" counts as the phases Phase-1 and Phase-2 (it is one entry, not two)
+                const phases = distinct([].concat.apply([], all.map(phaseList)));
+                const orgs = distinct([].concat.apply([], all.map(orgList)));
+
+                // SoEE is counted per SoEE No + Organisation
+                const soeeKeys = distinct(view.soee.map(r => norm(r['SoEE No.']) + '||' + orgOf(r)));
                 const psoNos = distinct(view.pso.map(r => norm(r['PSO No.'])));
-                const invNos = distinct(view.invoices.map(r => norm(r['Invoice No.'])));
+                const invKeys = distinct(view.invoices.map(r => norm(r['Invoice No.']) + '||' + orgOf(r)));
 
                 $('#kpiPhase').text(phases.length);
                 $('#kpiPhaseSub').text(orgs.length + (orgs.length === 1 ? ' organisation' : ' organisations'));
 
-                $('#kpiSoee').text(soeeNos.length);
+                $('#kpiSoee').text(soeeKeys.length);
                 $('#kpiSoeeSub').text('Amount ' + short(sum(view.soee, 'SoEE Amount')) +
                     ' · Pending ' + short(sum(view.soee, 'Pending Amount')));
 
@@ -793,10 +985,9 @@
                 $('#kpiPsoSub').text('Sanctioned ' + short(sum(view.pso, 'Sanctioned Amount')) +
                     ' · Net ' + short(sum(view.pso, 'Net Payable Amount')));
 
-                $('#kpiInv').text(invNos.length);
+                $('#kpiInv').text(invKeys.length);
                 $('#kpiInvSub').text('Total ' + short(sum(view.invoices, 'Total Amount')));
             }
-
             /* ---------- charts ---------- */
             function makeChart(id, cfg) {
                 if (charts[id]) charts[id].destroy();
@@ -838,15 +1029,47 @@
                 });
 
                 // 2. PSO chart grouped by PSO No.
+                // const pg = groupBy(view.pso, r => norm(r['PSO No.']));
+                // const pLabels = natSort(Object.keys(pg));
+                // makeChart('chPsoOrg', {
+                //     type: 'bar',
+                //     data: {
+                //         labels: pLabels, datasets: [
+                //             { label: 'Approved', data: pLabels.map(k => sum(pg[k], 'Approved Amount')), backgroundColor: COLORS[1] },
+                //             { label: 'Sanctioned', data: pLabels.map(k => sum(pg[k], 'Sanctioned Amount')), backgroundColor: COLORS[0] },
+                //             { label: 'Net Payable', data: pLabels.map(k => sum(pg[k], 'Net Payable Amount')), backgroundColor: COLORS[3] }
+                //         ]
+                //     },
+                //     options: Object.assign({}, baseOpts, {
+                //         scales: {
+                //             y: axisMoney,
+                //             x: { grid: { display: false }, ticks: { maxRotation: 60, minRotation: 0 } }
+                //         }
+                //     })
+                // });
+
+                // 2. PSO chart grouped by PSO No.
                 const pg = groupBy(view.pso, r => norm(r['PSO No.']));
                 const pLabels = natSort(Object.keys(pg));
                 makeChart('chPsoOrg', {
                     type: 'bar',
                     data: {
                         labels: pLabels, datasets: [
-                            { label: 'Approved', data: pLabels.map(k => sum(pg[k], 'Approved Amount')), backgroundColor: COLORS[1] },
-                            { label: 'Sanctioned', data: pLabels.map(k => sum(pg[k], 'Sanctioned Amount')), backgroundColor: COLORS[0] },
-                            { label: 'Net Payable', data: pLabels.map(k => sum(pg[k], 'Net Payable Amount')), backgroundColor: COLORS[3] }
+                            {
+                                label: 'Approved Amount',
+                                data: pLabels.map(k => sum(pg[k], 'Approved Amount')),
+                                backgroundColor: COLORS[1]
+                            },
+                            {
+                                label: 'Penalty / Recovery / Withhold Amount',
+                                data: pLabels.map(k => sum(pg[k], 'LD or Penalty') + sum(pg[k], 'Recovery') + sum(pg[k], 'Withheld Amount')),
+                                backgroundColor: COLORS[4]
+                            },
+                            {
+                                label: 'Net Payment',
+                                data: pLabels.map(k => sum(pg[k], 'Net Payable Amount')),
+                                backgroundColor: COLORS[3]
+                            }
                         ]
                     },
                     options: Object.assign({}, baseOpts, {
@@ -856,6 +1079,8 @@
                         }
                     })
                 });
+
+
                 // 3. Net payable by phase (doughnut)
                 const phg = groupBy(view.pso, r => norm(r['Phase']));
                 const phLabels = natSort(Object.keys(phg));
@@ -958,7 +1183,5 @@
             loadData();
         });
     </script>
-
 </body>
-
 </html>
