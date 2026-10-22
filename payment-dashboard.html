@@ -395,6 +395,47 @@
             opacity: .7;
         }
 
+        /* ---------- KPI colours (muted) ---------- */
+        .kpi-phase {
+            --k: #7d97c4;
+            --k-rgb: 125, 151, 196;
+        }
+
+        /* steel blue  */
+        .kpi-soee {
+            --k: #6aa6a0;
+            --k-rgb: 106, 166, 160;
+        }
+
+        /* muted teal  */
+        .kpi-pso {
+            --k: #c4a46a;
+            --k-rgb: 196, 164, 106;
+        }
+
+        /* soft ochre  */
+        .kpi-inv {
+            --k: #94ae86;
+            --k-rgb: 148, 174, 134;
+        }
+
+        /* sage green  */
+
+        .panel.kpi {
+            border-left: 4px solid var(--k);
+            background: linear-gradient(135deg, rgba(var(--k-rgb), .10) 0%, var(--panel) 65%);
+        }
+
+        .panel.kpi .kpi-icon {
+            background: rgba(var(--k-rgb), .16);
+            color: var(--k);
+        }
+
+        .panel.kpi .kpi-label {
+            color: var(--k);
+            font-weight: 500;
+        }
+
         @media (max-width: 576px) {
             .page {
                 padding: 14px;
@@ -433,7 +474,7 @@
         <!-- ================= KPIs ================= -->
         <div class="row g-3">
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="panel kpi">
+                <div class="panel kpi kpi-phase">
                     <div class="kpi-icon ic-phase"><i class="bi bi-layers"></i></div>
                     <div>
                         <div class="kpi-label">Phases</div>
@@ -443,7 +484,7 @@
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="panel kpi">
+                <div class="panel kpi kpi-soee">
                     <div class="kpi-icon ic-soee"><i class="bi bi-receipt"></i></div>
                     <div>
                         <div class="kpi-label">SoEE</div>
@@ -453,7 +494,7 @@
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="panel kpi">
+                <div class="panel kpi kpi-pso">
                     <div class="kpi-icon ic-pso"><i class="bi bi-bank"></i></div>
                     <div>
                         <div class="kpi-label">PSO</div>
@@ -463,7 +504,7 @@
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="panel kpi">
+                <div class="panel kpi kpi-inv">
                     <div class="kpi-icon ic-inv"><i class="bi bi-file-earmark-text"></i></div>
                     <div>
                         <div class="kpi-label">Invoices</div>
@@ -525,7 +566,7 @@
                     <select class="form-select" id="fPso"></select>
                 </div>
                 <div class="col-12 col-lg-2">
-                    <button type="button" class="btn btn-ghost w-100" id="resetBtn" style="min-height:42px;">
+                    <button type="button" class="btn btn-danger w-100" id="resetBtn" style="min-height:42px;">
                         <i class="bi bi-x-circle"></i> Reset
                     </button>
                 </div>
