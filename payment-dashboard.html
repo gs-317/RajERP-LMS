@@ -10,10 +10,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <script>
         (function () {
-            var t = 'dark';
-            try { t = localStorage.getItem('dakTheme') || 'dark'; } catch (e) { }
+            var t = 'dark', c = '0';
+            try { t = localStorage.getItem('dakTheme') || 'dark'; c = localStorage.getItem('dakSidebar') || '0'; } catch (e) { }
             document.documentElement.setAttribute('data-theme', t);
             document.documentElement.setAttribute('data-bs-theme', t);
+            if (c === '1') document.documentElement.classList.add('sb-collapsed');
         })();
     </script>
 
@@ -41,6 +42,10 @@
             --overlay: rgba(11, 18, 32, .85);
             --kpi-tint: .10;
             --scheme: dark;
+            --primary: #2563eb;
+            --primary-d: #1d4ed8;
+            --hover: #1e293b;
+            --text-3: #94a3b8;
         }
 
         [data-theme="light"] {
@@ -61,6 +66,8 @@
             --overlay: rgba(243, 244, 246, .85);
             --kpi-tint: .14;
             --scheme: light;
+            --hover: #f1f5f9;
+            --text-3: #6b7280;
         }
 
         /* KPI colours: muted on dark, slightly deeper on light for contrast */
@@ -176,10 +183,151 @@
             color: var(--title);
         }
 
-        .page {
+        /* .page {
             padding: 24px;
             max-width: 1600px;
             margin: 0 auto;
+        } */
+        /* ---------- Layout: same as the Dak dashboard ---------- */
+        .main {
+            margin-left: 220px;
+            min-height: 100vh;
+        }
+
+        .page {
+            padding: 24px 28px;
+            max-width: none;
+            margin: 0;
+        }
+
+        /* uses all the remaining width */
+
+        /* ---------- Sidebar (copied from the Dak dashboard) ---------- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 220px;
+            background: var(--panel);
+            border-right: 1px solid var(--line);
+            z-index: 1000;
+            padding: 24px 14px;
+            overflow-y: auto;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 12px 28px;
+            color: var(--title);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .sidebar-section-title {
+            padding: 0 12px;
+            margin: 10px 0 8px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 11px 12px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: var(--text-3);
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: .2s ease;
+        }
+
+        .sidebar-link:hover {
+            background: var(--hover);
+            color: var(--title);
+        }
+
+        .sidebar-link.active {
+            background: var(--primary-d);
+            color: #fff;
+        }
+
+        .sidebar-link i {
+            font-size: 17px;
+        }
+
+        #apiStatus {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--muted);
+        }
+
+        .status-dot.online {
+            background: #22c55e;
+        }
+
+        .status-dot.error {
+            background: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding: 12px;
+            }
+
+            .brand {
+                padding-bottom: 12px;
+            }
+
+            .sidebar-section-title {
+                display: none;
+            }
+
+            .sidebar-link {
+                display: inline-flex;
+                width: auto;
+                margin-right: 4px;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .page {
+                padding: 14px;
+            }
         }
 
         /* ---------- Panels ---------- */
@@ -549,6 +697,51 @@
             border-color: #fecaca;
         }
 
+        /* ---------- Collapsible sidebar (icons stay visible) ---------- */
+        .sidebar,
+        .main {
+            transition: width .2s ease, margin-left .2s ease;
+        }
+
+        @media (min-width: 769px) {
+            html.sb-collapsed .sidebar {
+                width: 68px;
+                padding: 24px 10px;
+            }
+
+            html.sb-collapsed .main {
+                margin-left: 68px;
+            }
+
+            html.sb-collapsed .brand {
+                padding: 0 0 22px;
+                justify-content: center;
+            }
+
+            html.sb-collapsed .brand>span,
+            html.sb-collapsed .sidebar-link>span:not(#apiStatus),
+            html.sb-collapsed .sidebar-section-title,
+            html.sb-collapsed #statusText {
+                display: none;
+            }
+
+            html.sb-collapsed .sidebar-link {
+                justify-content: center;
+                padding: 11px 0;
+            }
+
+            html.sb-collapsed .sidebar-link i {
+                font-size: 19px;
+            }
+        }
+
+        /* On small screens the sidebar is already a top strip, so the toggle is not needed */
+        @media (max-width: 768px) {
+            #sidebarToggle {
+                display: none;
+            }
+        }
+
         /* ---------- Mobile ---------- */
         @media (max-width: 576px) {
             .page {
@@ -567,184 +760,226 @@
 </head>
 
 <body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="bi bi-envelope-paper"></i></div>
+            <span>RajERP LMS</span>
+        </div>
+        <a href="#" class="sidebar-link" id="sidebarToggle">
+            <i class="bi bi-chevron-double-left"></i><span>Collapse Menu</span>
+        </a>
+
+        <div class="sidebar-section-title">Main</div>
+
+        <a href="dashboard.html" class="sidebar-link" id="dashboardLink">
+            <i class="bi bi-grid-1x2"></i><span>Dak Dashboard</span>
+        </a>
+        <!-- <a href="dashboard.html#new" class="sidebar-link">
+            <i class="bi bi-plus-circle"></i><span>New Dak</span>
+        </a>
+        <a href="dashboard.html#browse" class="sidebar-link">
+            <i class="bi bi-folder2-open"></i><span>Browse Files</span>
+        </a> -->
+        <a href="#" class="sidebar-link active" id="paymentDashboardLink">
+            <i class="bi bi-currency-rupee"></i><span>Payment Dashboard</span>
+        </a>
+        <a href="#" class="sidebar-link" id="refreshBtn">
+            <i class="bi bi-arrow-clockwise"></i><span>Refresh Data</span>
+        </a>
+        <a href="#" class="sidebar-link" id="themeBtn">
+            <i class="bi bi-sun"></i><span>Light Mode</span>
+        </a>
+
+        <div class="sidebar-section-title mt-4">Connection</div>
+        <div class="sidebar-link" style="cursor:default;">
+            <span id="apiStatus">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Connecting...</span>
+            </span>
+        </div>
+    </aside>
 
     <!-- ================= TOP BAR ================= -->
-    <div class="topbar">
-        <a href="dashboard.html" class="btn btn-ghost btn-sm"><i class="bi bi-arrow-left"></i> Dak Dashboard</a>
-        <div>
-            <h1><i class="bi bi-currency-rupee me-1"></i>Payment Dashboard</h1>
-            <small id="lastUpdated">Loading...</small>
+
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <h1><i class="bi bi-currency-rupee me-1"></i>Payment Dashboard</h1>
+                <small id="lastUpdated">Loading...</small>
+            </div>
+            <!-- <div class="ms-auto">
+                <button type="button" class="btn btn-theme btn-sm" id="refreshBtn"><i class="bi bi-arrow-clockwise"></i>
+                    Refresh</button>
+            </div> -->
         </div>
-        <div class="ms-auto">
-            <button type="button" class="btn btn-ghost btn-sm" id="themeBtn"><i class="bi bi-sun"></i> Light</button>
-            <button type="button" class="btn btn-theme btn-sm" id="refreshBtn"><i class="bi bi-arrow-clockwise"></i>
-                Refresh</button>
-        </div>
-    </div>
 
-    <div class="page">
+        <div class="page">
 
-        <div id="errorBox"></div>
+            <div id="errorBox"></div>
 
-        <!-- ================= KPIs ================= -->
-        <div class="row g-3">
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="panel kpi kpi-phase">
-                    <div class="kpi-icon ic-phase"><i class="bi bi-layers"></i></div>
-                    <div>
-                        <div class="kpi-label">Phases</div>
-                        <div class="kpi-value" id="kpiPhase">0</div>
-                        <div class="kpi-sub" id="kpiPhaseSub">&nbsp;</div>
+            <!-- ================= KPIs ================= -->
+            <div class="row g-3">
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="panel kpi kpi-phase">
+                        <div class="kpi-icon ic-phase"><i class="bi bi-layers"></i></div>
+                        <div>
+                            <div class="kpi-label">Phases</div>
+                            <div class="kpi-value" id="kpiPhase">0</div>
+                            <div class="kpi-sub" id="kpiPhaseSub">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="panel kpi kpi-soee">
+                        <div class="kpi-icon ic-soee"><i class="bi bi-receipt"></i></div>
+                        <div>
+                            <div class="kpi-label">SoEE</div>
+                            <div class="kpi-value" id="kpiSoee">0</div>
+                            <div class="kpi-sub" id="kpiSoeeSub">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="panel kpi kpi-pso">
+                        <div class="kpi-icon ic-pso"><i class="bi bi-bank"></i></div>
+                        <div>
+                            <div class="kpi-label">PSO</div>
+                            <div class="kpi-value" id="kpiPso">0</div>
+                            <div class="kpi-sub" id="kpiPsoSub">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="panel kpi kpi-inv">
+                        <div class="kpi-icon ic-inv"><i class="bi bi-file-earmark-text"></i></div>
+                        <div>
+                            <div class="kpi-label">Invoices</div>
+                            <div class="kpi-value" id="kpiInv">0</div>
+                            <div class="kpi-sub" id="kpiInvSub">&nbsp;</div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="panel kpi kpi-soee">
-                    <div class="kpi-icon ic-soee"><i class="bi bi-receipt"></i></div>
-                    <div>
-                        <div class="kpi-label">SoEE</div>
-                        <div class="kpi-value" id="kpiSoee">0</div>
-                        <div class="kpi-sub" id="kpiSoeeSub">&nbsp;</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="panel kpi kpi-pso">
-                    <div class="kpi-icon ic-pso"><i class="bi bi-bank"></i></div>
-                    <div>
-                        <div class="kpi-label">PSO</div>
-                        <div class="kpi-value" id="kpiPso">0</div>
-                        <div class="kpi-sub" id="kpiPsoSub">&nbsp;</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="panel kpi kpi-inv">
-                    <div class="kpi-icon ic-inv"><i class="bi bi-file-earmark-text"></i></div>
-                    <div>
-                        <div class="kpi-label">Invoices</div>
-                        <div class="kpi-value" id="kpiInv">0</div>
-                        <div class="kpi-sub" id="kpiInvSub">&nbsp;</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- ================= CHARTS ================= -->
-        <div class="section-label">Overview</div>
-        <div class="row g-3">
-            <div class="col-12 col-lg-6">
-                <div class="panel">
-                    <div class="panel-title">SoEE: Amount, Credited and Pending by Organisation</div>
-                    <div class="chart-box"><canvas id="chSoeeOrg"></canvas></div>
+            <!-- ================= CHARTS ================= -->
+            <div class="section-label">Overview</div>
+            <div class="row g-3">
+                <div class="col-12 col-lg-6">
+                    <div class="panel">
+                        <div class="panel-title">SoEE: Amount, Credited and Pending by Organisation</div>
+                        <div class="chart-box"><canvas id="chSoeeOrg"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="panel">
+                        <div class="panel-title">PSO: Approved Amount, Penalty / Recovery / Withhold and Net Payment
+                            against
+                            PSO No.</div>
+                        <div class="chart-box"><canvas id="chPsoOrg"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-5">
+                    <div class="panel">
+                        <div class="panel-title">Net Payment by Phase</div>
+                        <div class="chart-box"><canvas id="chPhase"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-7">
+                    <div class="panel">
+                        <div class="panel-title">Invoice Amount by Month</div>
+                        <div class="chart-box"><canvas id="chInvMonth"></canvas></div>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-lg-6">
-                <div class="panel">
-                    <div class="panel-title">PSO: Approved Amount, Penalty / Recovery / Withhold and Net Payment against
-                        PSO No.</div>
-                    <div class="chart-box"><canvas id="chPsoOrg"></canvas></div>
-                </div>
-            </div>
-            <div class="col-12 col-lg-5">
-                <div class="panel">
-                    <div class="panel-title">Net Payment by Phase</div>
-                    <div class="chart-box"><canvas id="chPhase"></canvas></div>
-                </div>
-            </div>
-            <div class="col-12 col-lg-7">
-                <div class="panel">
-                    <div class="panel-title">Invoice Amount by Month</div>
-                    <div class="chart-box"><canvas id="chInvMonth"></canvas></div>
-                </div>
-            </div>
-        </div>
 
-        <!-- ================= FILTERS ================= -->
-        <div class="section-label">Filters</div>
-        <div class="panel">
-            <div class="row g-3 align-items-end">
-                <div class="col-6 col-lg-3">
-                    <label class="form-label" for="fPhase">Phase</label>
-                    <select class="form-select" id="fPhase"></select>
+            <!-- ================= FILTERS ================= -->
+            <div class="section-label">Filters</div>
+            <div class="panel">
+                <div class="row g-3 align-items-end">
+                    <div class="col-6 col-lg-3">
+                        <label class="form-label" for="fPhase">Phase</label>
+                        <select class="form-select" id="fPhase"></select>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <label class="form-label" for="fOrg">Organisation</label>
+                        <select class="form-select" id="fOrg"></select>
+                    </div>
+                    <div class="col-6 col-lg-2">
+                        <label class="form-label" for="fSoee">SoEE No.</label>
+                        <select class="form-select" id="fSoee"></select>
+                    </div>
+                    <div class="col-6 col-lg-2">
+                        <label class="form-label" for="fPso">PSO No.</label>
+                        <select class="form-select" id="fPso"></select>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <button type="button" class="btn btn-danger w-100" id="resetBtn" style="min-height:42px;">
+                            <i class="bi bi-x-circle"></i> Reset
+                        </button>
+                    </div>
                 </div>
-                <div class="col-6 col-lg-3">
-                    <label class="form-label" for="fOrg">Organisation</label>
-                    <select class="form-select" id="fOrg"></select>
+            </div>
+
+            <!-- ================= DATA ================= -->
+            <div class="section-label">Filtered Data</div>
+            <div class="panel">
+                <div class="data-tabs" id="dataTabs"></div>
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead id="dataHead"></thead>
+                        <tbody id="dataBody"></tbody>
+                    </table>
                 </div>
-                <div class="col-6 col-lg-2">
-                    <label class="form-label" for="fSoee">SoEE No.</label>
-                    <select class="form-select" id="fSoee"></select>
+                <div class="pager">
+                    <div id="pagerInfo"></div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-ghost btn-sm" id="prevPage"><i
+                                class="bi bi-chevron-left"></i>
+                            Prev</button>
+                        <button type="button" class="btn btn-ghost btn-sm" id="nextPage">Next <i
+                                class="bi bi-chevron-right"></i></button>
+                    </div>
                 </div>
-                <div class="col-6 col-lg-2">
-                    <label class="form-label" for="fPso">PSO No.</label>
-                    <select class="form-select" id="fPso"></select>
-                </div>
-                <div class="col-12 col-lg-2">
-                    <button type="button" class="btn btn-danger w-100" id="resetBtn" style="min-height:42px;">
-                        <i class="bi bi-x-circle"></i> Reset
+            </div>
+
+            <!-- ================= CONSOLIDATED REPORT ================= -->
+            <div class="section-label">Consolidated Report</div>
+            <div class="panel">
+                <!-- <div class="panel-title" id="consSub">&nbsp;</div> -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <div class="panel-title mb-0" id="consSub">&nbsp;</div>
+                    <button type="button" class="btn btn-theme btn-sm" id="downloadConsBtn">
+                        <i class="bi bi-file-earmark-pdf"></i> Generate PDF
                     </button>
                 </div>
-            </div>
-        </div>
-
-        <!-- ================= DATA ================= -->
-        <div class="section-label">Filtered Data</div>
-        <div class="panel">
-            <div class="data-tabs" id="dataTabs"></div>
-            <div class="table-wrap">
-                <table class="data-table">
-                    <thead id="dataHead"></thead>
-                    <tbody id="dataBody"></tbody>
-                </table>
-            </div>
-            <div class="pager">
-                <div id="pagerInfo"></div>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-ghost btn-sm" id="prevPage"><i class="bi bi-chevron-left"></i>
-                        Prev</button>
-                    <button type="button" class="btn btn-ghost btn-sm" id="nextPage">Next <i
-                            class="bi bi-chevron-right"></i></button>
+                <div class="table-wrap" style="max-height:620px;">
+                    <table class="data-table cons-table">
+                        <thead>
+                            <tr>
+                                <th>Organisation</th>
+                                <th>Phase</th>
+                                <th>SoEE No</th>
+                                <th>SoEE Date</th>
+                                <th class="num">SoEE Amount</th>
+                                <th class="num">Credit Amount</th>
+                                <th class="num">Remaining Amount</th>
+                                <th>Invoice No</th>
+                                <th>Invoice Date</th>
+                                <th>Invoice Period</th>
+                                <th class="num">Invoice Amount</th>
+                                <th class="num">Invoice Penalty</th>
+                                <th>PSO No</th>
+                                <th>PSO Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="consBody"></tbody>
+                    </table>
                 </div>
             </div>
-        </div>
 
-        <!-- ================= CONSOLIDATED REPORT ================= -->
-        <div class="section-label">Consolidated Report</div>
-        <div class="panel">
-            <!-- <div class="panel-title" id="consSub">&nbsp;</div> -->
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                <div class="panel-title mb-0" id="consSub">&nbsp;</div>
-                <button type="button" class="btn btn-theme btn-sm" id="downloadConsBtn">
-                    <i class="bi bi-file-earmark-pdf"></i> Generate PDF
-                </button>
-            </div>
-            <div class="table-wrap" style="max-height:620px;">
-                <table class="data-table cons-table">
-                    <thead>
-                        <tr>
-                            <th>Organisation</th>
-                            <th>Phase</th>
-                            <th>SoEE No</th>
-                            <th>SoEE Date</th>
-                            <th class="num">SoEE Amount</th>
-                            <th class="num">Credit Amount</th>
-                            <th class="num">Remaining Amount</th>
-                            <th>Invoice No</th>
-                            <th>Invoice Date</th>
-                            <th>Invoice Period</th>
-                            <th class="num">Invoice Amount</th>
-                            <th class="num">Invoice Penalty</th>
-                            <th>PSO No</th>
-                            <th>PSO Date</th>
-                        </tr>
-                    </thead>
-                    <tbody id="consBody"></tbody>
-                </table>
-            </div>
         </div>
+    </main>
 
-    </div>
 
     <div class="modal fade" id="pdfReportModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -809,15 +1044,17 @@
                 document.documentElement.setAttribute('data-bs-theme', t);
                 try { localStorage.setItem('dakTheme', t); } catch (e) { }
                 $('#themeBtn').html(t === 'dark'
-                    ? '<i class="bi bi-sun"></i> Light'
-                    : '<i class="bi bi-moon-stars"></i> Dark');
+                    ? '<i class="bi bi-sun"></i><span>Light Mode</span>'
+                    : '<i class="bi bi-moon-stars"></i><span>Dark Mode</span>');
                 applyChartTheme();
-                if (view && view.soee) refresh();      // redraw charts in the new colours
+                if (view && view.soee) refresh();
             }
 
-            $('#themeBtn').on('click', function () {
+            $('#themeBtn').on('click', function (e) {
+                e.preventDefault();
                 setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
             });
+
 
             setTheme(document.documentElement.getAttribute('data-theme') || 'dark');
 
@@ -967,14 +1204,23 @@
                         page = 1;
                         refresh();
                         $('#lastUpdated').text('Updated ' + new Date().toLocaleString('en-GB'));
+                        setStatus(true, 'Connected');
                     })
                     .fail(function () {
                         showError('Request failed. Check the web app URL and that the latest version is deployed.');
+                        setStatus(false, 'Connection failed');
                     })
                     .always(function () { $('#loadingOverlay').hide(); });
             }
 
             function showError(msg) { $('#errorBox').text(msg).show(); }
+
+            function setStatus(ok, text) {
+                $('#statusDot').toggleClass('online', ok).toggleClass('error', !ok);
+                $('#statusText').text(text);
+            }
+
+            $('#refreshLink').on('click', function (e) { e.preventDefault(); loadData(); });
 
             // items: plain strings, or {v: value, l: label}
             function fillSelect($el, items, current, placeholder) {
@@ -1647,6 +1893,31 @@
                 $('#pdfReportFrame').attr('src', 'about:blank');
                 if (pdfUrl) { URL.revokeObjectURL(pdfUrl); pdfUrl = null; }
             });
+
+            function setSidebar(collapsed) {
+                document.documentElement.classList.toggle('sb-collapsed', collapsed);
+                try { localStorage.setItem('dakSidebar', collapsed ? '1' : '0'); } catch (e) { }
+                $('#sidebarToggle').html(collapsed
+                    ? '<i class="bi bi-chevron-double-right"></i><span>Expand Menu</span>'
+                    : '<i class="bi bi-chevron-double-left"></i><span>Collapse Menu</span>');
+            }
+
+            $('#sidebarToggle').on('click', function (e) {
+                e.preventDefault();
+                setSidebar(!document.documentElement.classList.contains('sb-collapsed'));
+            });
+
+            // When collapsed, hovering an icon shows its name
+            $(document).on('mouseenter', '.sidebar-link', function () {
+                if (document.documentElement.classList.contains('sb-collapsed')) {
+                    const t = $(this).children('span').not('#apiStatus').first().text().trim();
+                    if (t) this.title = t;
+                } else {
+                    this.removeAttribute('title');
+                }
+            });
+
+            setSidebar(document.documentElement.classList.contains('sb-collapsed'));
 
             loadData();
         });
