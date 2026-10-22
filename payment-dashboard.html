@@ -1254,10 +1254,42 @@
                         rows.push(row);
                     });
                 });
+                /* ---- make PSO and invoice identity consistent across rows ---- */
+                const idOf = s => low(s).replace(/\s+/g, '');
+                const dateKey = s => { const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(norm(s)); return m ? m[3] + m[2] + m[1] : ''; };
 
+                // first non-empty (earliest) date seen for each PSO No / Invoice No
+                const psoInfo = {}, invInfo = {};
+                rows.forEach(function (r) {
+                    const pk = idOf(r.psoNo);
+                    if (pk) {
+                        const p = psoInfo[pk] = psoInfo[pk] || { no: r.psoNo, date: '' };
+                        if (r.psoDate && (!p.date || dateKey(r.psoDate) < dateKey(p.date))) p.date = r.psoDate;
+                    }
+                    const ik = idOf(r.invNo);
+                    if (ik) {
+                        const i = invInfo[ik] = invInfo[ik] || { date: '' };
+                        if (r.invDate && (!i.date || dateKey(r.invDate) < dateKey(i.date))) i.date = r.invDate;
+                    }
+                });
+
+                rows.forEach(function (r) {
+                    r.psoId = idOf(r.psoNo);
+                    r.invId = idOf(r.invNo);
+                    if (r.psoId) { r.psoNo = psoInfo[r.psoId].no; r.psoDate = psoInfo[r.psoId].date; }
+                    if (r.invId) { r.invDate = invInfo[r.invId].date; }
+                });
+
+                
                 rows.sort((a, b) =>
-                    cmp(a.org, b.org) || cmp(a.phase, b.phase) || cmp(a.soeeNo, b.soeeNo) ||
-                    cmp(dk(a.soeeDate), dk(b.soeeDate)) || cmp(a.psoNo, b.psoNo) || cmp(a.invNo, b.invNo));
+                    cmp(a.org, b.org) ||
+                    cmp(a.phase, b.phase) ||
+                    cmp(dateKey(a.psoDate), dateKey(b.psoDate)) ||
+                    cmp(a.psoId, b.psoId) ||
+                    cmp(a.soeeNo, b.soeeNo) ||
+                    cmp(dk(a.soeeDate), dk(b.soeeDate)) ||
+                    cmp(dateKey(a.invDate), dateKey(b.invDate)) ||
+                    cmp(a.invId, b.invId));
 
                 if (!rows.length) {
                     $('#consBody').html('<tr><td colspan="12"><div class="empty-state"><i class="bi bi-inbox"></i>' +
@@ -1266,12 +1298,12 @@
                     return;
                 }
 
-                /* ---- row-span: merge consecutive cells with the same value inside the same parent group ---- */
+              
                 const kOrg = r => low(r.org);
                 const kPhase = r => kOrg(r) + '|' + low(r.phase);
                 const kSoee = r => kPhase(r) + '|' + low(r.soeeNo) + '|' + low(r.soeeDate);
-                const kPso = r => kSoee(r) + '|' + low(r.psoNo) + '|' + low(r.psoDate);
-                const kInv = r => kPso(r) + '|' + low(r.invNo) + '|' + low(r.invDate);
+                const kPso = r => kPhase(r) + '|' + r.psoId;              // no SoEE here, so it merges across SoEEs
+                const kInv = r => kSoee(r) + '|' + r.psoId + '|' + r.invId;
 
                 const cols = [
                     { key: kOrg, val: r => r.org },
