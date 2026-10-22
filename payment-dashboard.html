@@ -8,24 +8,117 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script>
+        (function () {
+            var t = 'dark';
+            try { t = localStorage.getItem('dakTheme') || 'dark'; } catch (e) { }
+            document.documentElement.setAttribute('data-theme', t);
+            document.documentElement.setAttribute('data-bs-theme', t);
+        })();
+    </script>
 
     <style>
+        /* =========================================================
+   THEME COLOURS  (change colours only here)
+========================================================= */
         :root {
             --bg: #0b1220;
             --panel: #111827;
             --panel-2: #182131;
             --line: #2d3748;
             --input: #1f2937;
+            --edge: #374151;
             --text: #e5e7eb;
             --muted: #9ca3af;
+            --title: #f9fafb;
             --accent: #8b5cf6;
             --accent-d: #7c3aed;
+            --grid: #1f2937;
+            --hover: rgba(139, 92, 246, .10);
+            --ghost-edge: #4b5563;
+            --ghost-hover: #374151;
+            --scroll: #4b5563;
+            --overlay: rgba(11, 18, 32, .85);
+            --kpi-tint: .10;
+            --scheme: dark;
         }
 
+        [data-theme="light"] {
+            --bg: #f3f4f6;
+            --panel: #ffffff;
+            --panel-2: #f9fafb;
+            --line: #e5e7eb;
+            --input: #ffffff;
+            --edge: #d1d5db;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --title: #111827;
+            --grid: #eef0f3;
+            --hover: rgba(139, 92, 246, .07);
+            --ghost-edge: #d1d5db;
+            --ghost-hover: #e5e7eb;
+            --scroll: #cbd5e1;
+            --overlay: rgba(243, 244, 246, .85);
+            --kpi-tint: .14;
+            --scheme: light;
+        }
+
+        /* KPI colours: muted on dark, slightly deeper on light for contrast */
+        .kpi-phase {
+            --k: #7d97c4;
+            --k-rgb: 125, 151, 196;
+        }
+
+        /* steel blue */
+        .kpi-soee {
+            --k: #6aa6a0;
+            --k-rgb: 106, 166, 160;
+        }
+
+        /* muted teal */
+        .kpi-pso {
+            --k: #c4a46a;
+            --k-rgb: 196, 164, 106;
+        }
+
+        /* soft ochre */
+        .kpi-inv {
+            --k: #94ae86;
+            --k-rgb: 148, 174, 134;
+        }
+
+        /* sage green */
+        [data-theme="light"] .kpi-phase {
+            --k: #4f6fa3;
+            --k-rgb: 79, 111, 163;
+        }
+
+        [data-theme="light"] .kpi-soee {
+            --k: #3f857e;
+            --k-rgb: 63, 133, 126;
+        }
+
+        [data-theme="light"] .kpi-pso {
+            --k: #9a7a3a;
+            --k-rgb: 154, 122, 58;
+        }
+
+        [data-theme="light"] .kpi-inv {
+            --k: #62804f;
+            --k-rgb: 98, 128, 79;
+        }
+
+        /* =========================================================
+   BASE
+========================================================= */
         body {
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
+        }
+
+        input[type="date"] {
+            color-scheme: var(--scheme);
         }
 
         /* ---------- Top bar ---------- */
@@ -46,7 +139,7 @@
             font-size: 20px;
             font-weight: 600;
             margin: 0;
-            color: #f9fafb;
+            color: var(--title);
         }
 
         .topbar small {
@@ -74,13 +167,13 @@
 
         .btn-ghost {
             background: transparent;
-            border: 1px solid #4b5563;
+            border: 1px solid var(--ghost-edge);
             color: var(--text);
         }
 
         .btn-ghost:hover {
-            background: #374151;
-            color: #fff;
+            background: var(--ghost-hover);
+            color: var(--title);
         }
 
         .page {
@@ -101,7 +194,7 @@
         .panel-title {
             font-size: 15px;
             font-weight: 600;
-            color: #f9fafb;
+            color: var(--title);
             margin-bottom: 14px;
         }
 
@@ -138,7 +231,7 @@
         .kpi-value {
             font-size: 28px;
             font-weight: 700;
-            color: #f9fafb;
+            color: var(--title);
             line-height: 1.1;
         }
 
@@ -148,24 +241,28 @@
             margin-top: 4px;
         }
 
-        .ic-phase {
-            background: rgba(139, 92, 246, .15);
-            color: #a78bfa;
+        .panel.kpi {
+            border-left: 4px solid var(--k);
+            background: linear-gradient(135deg, rgba(var(--k-rgb), var(--kpi-tint)) 0%, var(--panel) 65%);
         }
 
-        .ic-soee {
-            background: rgba(34, 211, 238, .15);
-            color: #22d3ee;
+        .panel.kpi .kpi-icon {
+            background: rgba(var(--k-rgb), .16);
+            color: var(--k);
         }
 
-        .ic-pso {
-            background: rgba(245, 158, 11, .15);
-            color: #fbbf24;
+        .panel.kpi .kpi-label {
+            color: var(--k);
+            font-weight: 500;
         }
 
-        .ic-inv {
-            background: rgba(52, 211, 153, .15);
-            color: #34d399;
+        .panel.kpi[data-goto] {
+            cursor: pointer;
+            transition: transform .12s;
+        }
+
+        .panel.kpi[data-goto]:hover {
+            transform: translateY(-2px);
         }
 
         /* ---------- Charts ---------- */
@@ -181,24 +278,48 @@
             font-weight: 500;
         }
 
-        .form-select {
+        .form-select,
+        .form-control {
             min-height: 42px;
             background-color: var(--input);
-            color: #f3f4f6;
-            border: 1px solid #374151;
+            color: var(--text);
+            border: 1px solid var(--edge);
             box-shadow: none;
         }
 
-        .form-select:focus {
+        .form-select:focus,
+        .form-control:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
-            background-color: #202938;
-            color: #fff;
+            background-color: var(--input);
+            color: var(--text);
         }
 
         .form-select option {
             background: var(--input);
-            color: #f3f4f6;
+            color: var(--text);
+        }
+
+        /* ---------- Active filter chips ---------- */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            font-size: 13px;
+            background: rgba(139, 92, 246, .15);
+            border: 1px solid rgba(139, 92, 246, .4);
+            border-radius: 999px;
+            color: var(--text);
+        }
+
+        .chip .chip-x {
+            cursor: pointer;
+            opacity: .7;
+        }
+
+        .chip .chip-x:hover {
+            opacity: 1;
         }
 
         /* ---------- Tabs ---------- */
@@ -211,7 +332,7 @@
 
         .data-tab {
             background: var(--input);
-            border: 1px solid #374151;
+            border: 1px solid var(--edge);
             color: var(--text);
             border-radius: 8px;
             padding: 7px 14px;
@@ -220,7 +341,7 @@
         }
 
         .data-tab:hover {
-            background: #374151;
+            background: var(--ghost-hover);
         }
 
         .data-tab.active {
@@ -230,9 +351,13 @@
         }
 
         .data-tab .badge {
-            background: rgba(255, 255, 255, .15);
+            background: rgba(127, 127, 127, .25);
             margin-left: 6px;
             font-weight: 500;
+        }
+
+        .data-tab.active .badge {
+            background: rgba(255, 255, 255, .25);
         }
 
         /* ---------- Table ---------- */
@@ -249,7 +374,7 @@
         }
 
         .table-wrap::-webkit-scrollbar-thumb {
-            background: #4b5563;
+            background: var(--scroll);
             border-radius: 10px;
         }
 
@@ -270,7 +395,7 @@
             position: sticky;
             top: 0;
             background: var(--panel-2);
-            color: #f3f4f6;
+            color: var(--title);
             border-bottom: 1px solid var(--line);
             padding: 11px 12px;
             white-space: nowrap;
@@ -280,12 +405,12 @@
 
         .data-table td {
             padding: 10px 12px;
-            border-bottom: 1px solid #1f2937;
+            border-bottom: 1px solid var(--grid);
             white-space: nowrap;
         }
 
         .data-table tbody tr:hover td {
-            background: #1a2332;
+            background: var(--hover);
         }
 
         .data-table .num {
@@ -322,27 +447,16 @@
             gap: 8px;
         }
 
-        /* ---------- Loading / error ---------- */
-        #loadingOverlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(11, 18, 32, .85);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 12px;
+        /* ---------- Consolidated report ---------- */
+        .cons-wrap {
+            max-width: 100%;
+            min-width: 0;
+            overflow: auto;
         }
 
-        #errorBox {
-            display: none;
-            background: rgba(239, 68, 68, .1);
-            color: #f87171;
-            border: 1px solid #7f1d1d;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
+        .cons-table {
+            width: max-content;
+            min-width: 100%;
         }
 
         .cons-table th,
@@ -368,9 +482,10 @@
         .cons-table tr.cons-total td {
             background: var(--panel-2);
             font-weight: 600;
-            color: #f9fafb;
+            color: var(--title);
         }
 
+        /* ---------- PDF popup ---------- */
         #pdfReportModal .modal-content {
             background: var(--panel);
             color: var(--text);
@@ -385,7 +500,7 @@
         }
 
         #pdfReportModal .modal-title {
-            color: #f9fafb;
+            color: var(--title);
             font-size: 18px;
             font-weight: 600;
         }
@@ -395,47 +510,46 @@
             opacity: .7;
         }
 
-        /* ---------- KPI colours (muted) ---------- */
-        .kpi-phase {
-            --k: #7d97c4;
-            --k-rgb: 125, 151, 196;
+        [data-theme="light"] #pdfReportModal .btn-close {
+            filter: none;
+            opacity: .6;
         }
 
-        /* steel blue  */
-        .kpi-soee {
-            --k: #6aa6a0;
-            --k-rgb: 106, 166, 160;
+        /* ---------- Loading / error ---------- */
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: var(--overlay);
+            z-index: 100;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        /* muted teal  */
-        .kpi-pso {
-            --k: #c4a46a;
-            --k-rgb: 196, 164, 106;
+        #loadingOverlay .spinner-border {
+            color: var(--accent) !important;
         }
 
-        /* soft ochre  */
-        .kpi-inv {
-            --k: #94ae86;
-            --k-rgb: 148, 174, 134;
+        #errorBox {
+            display: none;
+            background: rgba(239, 68, 68, .1);
+            color: #f87171;
+            border: 1px solid #7f1d1d;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
         }
 
-        /* sage green  */
-
-        .panel.kpi {
-            border-left: 4px solid var(--k);
-            background: linear-gradient(135deg, rgba(var(--k-rgb), .10) 0%, var(--panel) 65%);
+        [data-theme="light"] #errorBox {
+            color: #b91c1c;
+            background: rgba(239, 68, 68, .08);
+            border-color: #fecaca;
         }
 
-        .panel.kpi .kpi-icon {
-            background: rgba(var(--k-rgb), .16);
-            color: var(--k);
-        }
-
-        .panel.kpi .kpi-label {
-            color: var(--k);
-            font-weight: 500;
-        }
-
+        /* ---------- Mobile ---------- */
         @media (max-width: 576px) {
             .page {
                 padding: 14px;
@@ -462,6 +576,7 @@
             <small id="lastUpdated">Loading...</small>
         </div>
         <div class="ms-auto">
+            <button type="button" class="btn btn-ghost btn-sm" id="themeBtn"><i class="bi bi-sun"></i> Light</button>
             <button type="button" class="btn btn-theme btn-sm" id="refreshBtn"><i class="bi bi-arrow-clockwise"></i>
                 Refresh</button>
         </div>
@@ -671,8 +786,9 @@
             const PAGE_SIZE = 15;
             const COLORS = ['#8b5cf6', '#22d3ee', '#f59e0b', '#34d399', '#f87171', '#60a5fa', '#f472b6'];
 
-            Chart.defaults.color = '#9ca3af';
-            Chart.defaults.borderColor = '#2d3748';
+            // Chart.defaults.color = '#9ca3af';
+            // Chart.defaults.borderColor = '#2d3748';
+
 
             let D = { invoices: [], pso: [], soee: [], relation: [], match: [], ledger: [] };
             const F = { phase: '', org: '', soee: '', pso: '' };
@@ -681,6 +797,29 @@
             let page = 1;
             let consExport = null;   // data of the report currently on screen
             const charts = {};
+            const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+            function applyChartTheme() {
+                Chart.defaults.color = cssVar('--muted');
+                Chart.defaults.borderColor = cssVar('--line');
+            }
+
+            function setTheme(t) {
+                document.documentElement.setAttribute('data-theme', t);
+                document.documentElement.setAttribute('data-bs-theme', t);
+                try { localStorage.setItem('dakTheme', t); } catch (e) { }
+                $('#themeBtn').html(t === 'dark'
+                    ? '<i class="bi bi-sun"></i> Light'
+                    : '<i class="bi bi-moon-stars"></i> Dark');
+                applyChartTheme();
+                if (view && view.soee) refresh();      // redraw charts in the new colours
+            }
+
+            $('#themeBtn').on('click', function () {
+                setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+            });
+
+            setTheme(document.documentElement.getAttribute('data-theme') || 'dark');
 
             /* ---------- helpers ---------- */
             const norm = v => String(v == null ? '' : v).trim();
@@ -1280,7 +1419,7 @@
                     if (r.invId) { r.invDate = invInfo[r.invId].date; }
                 });
 
-                
+
                 rows.sort((a, b) =>
                     cmp(a.org, b.org) ||
                     cmp(a.phase, b.phase) ||
@@ -1298,7 +1437,7 @@
                     return;
                 }
 
-              
+
                 const kOrg = r => low(r.org);
                 const kPhase = r => kOrg(r) + '|' + low(r.phase);
                 const kSoee = r => kPhase(r) + '|' + low(r.soeeNo) + '|' + low(r.soeeDate);
